@@ -228,13 +228,16 @@ export default function Home() {
           {/* Basic */}
           <div className="flex flex-col rounded-[1.5rem] border border-hairline bg-surface-1 p-7 shadow-card">
             <p className="text-sm font-semibold uppercase tracking-wide text-ink-muted">Basic</p>
-            <p className="mt-1 text-sm text-ink-muted">Everything your cashier needs to sell and track orders.</p>
+            <p className="mt-1 text-sm text-ink-muted">Good for starters and small businesses.</p>
             <div className="mt-5 flex items-baseline gap-1.5">
-              <span className="text-[44px] font-semibold leading-none tracking-tight text-ink">₱999</span>
+              <span className="text-[44px] font-semibold leading-none tracking-tight text-ink">₱499</span>
               <span className="text-sm text-ink-muted">/month per branch</span>
             </div>
-            <p className="mt-1.5 text-xs text-ink-subtle">or ₱9,990 a year (2 months free)</p>
-            <ul className="mt-6 space-y-2.5 text-sm text-ink">
+            <p className="mt-1.5 text-xs text-ink-subtle">about ₱17 a day</p>
+            <span className="mt-2.5 inline-flex w-fit items-center rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700">
+              Yearly ₱4,990 · 2 months free
+            </span>
+            <ul className="mt-5 space-y-2.5 text-sm text-ink">
               {[
                 "Up to 100 items sold per day",
                 "Fast Sell screen for the cashier",
@@ -251,29 +254,39 @@ export default function Home() {
                 </li>
               ))}
             </ul>
-            <a
-              href="mailto:hello@prestigeitsolutions.tech?subject=Prestige%20POS%3A%20Start%20Basic"
-              className="mt-8 rounded-full border border-hairline bg-surface-1 px-6 py-3 text-center text-sm font-semibold text-ink transition hover:bg-surface-3"
-            >
-              Start with Basic
-            </a>
+            <div className="mt-auto pt-8">
+              <a
+                href="mailto:hello@prestigeitsolutions.tech?subject=Prestige%20POS%3A%20Start%20Basic"
+                className="block rounded-full border border-hairline bg-surface-1 px-6 py-3 text-center text-sm font-semibold text-ink transition hover:bg-surface-3"
+              >
+                Try Basic free
+              </a>
+              <p className="mt-2.5 text-center text-[11px] text-ink-subtle">
+                14-day free trial · no card needed
+              </p>
+            </div>
           </div>
 
           {/* Pro */}
-          <div className="relative flex flex-col rounded-[1.5rem] border-2 border-brand bg-surface-1 p-7 shadow-card">
+          <div className="relative flex flex-col rounded-[1.5rem] border-2 border-brand bg-gradient-to-b from-brand-tint/70 via-surface-1 to-surface-1 p-7 shadow-[0_18px_50px_-18px_rgba(142,110,73,0.45)]">
             <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-brand px-4 py-1.5 text-xs font-semibold text-white shadow-card">
               Most popular
             </span>
             <p className="text-sm font-semibold uppercase tracking-wide text-brand-deep">Pro</p>
-            <p className="mt-1 text-sm text-ink-muted">The whole business. Everything Prestige can do.</p>
+            <p className="mt-1 text-sm text-ink-muted">For growing and busy businesses.</p>
             <div className="mt-5 flex items-baseline gap-1.5">
               <span className="text-[44px] font-semibold leading-none tracking-tight text-ink">₱1,499</span>
               <span className="text-sm text-ink-muted">/month per branch</span>
             </div>
             <p className="mt-1.5 text-xs text-ink-subtle">
-              or ₱14,990 a year (2 months free). That is about ₱49 a day.
+              about ₱49 a day. Less than one latte.
             </p>
-            <p className="mt-4 text-[13px] font-semibold text-ink">Everything in Basic, plus:</p>
+            <span className="mt-2.5 inline-flex w-fit items-center rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700">
+              Yearly ₱14,990 · save ₱2,998
+            </span>
+            <p className="mt-4 text-[13px] font-semibold text-ink">
+              Everything in Basic, plus everything unlocked:
+            </p>
             <ul className="mt-3 space-y-2.5 text-sm text-ink">
               {[
                 "Unlimited daily sales",
@@ -294,16 +307,24 @@ export default function Home() {
                 </li>
               ))}
             </ul>
-            <a
-              href="mailto:hello@prestigeitsolutions.tech?subject=Prestige%20POS%3A%20Start%20Pro%20trial"
-              className="mt-8 rounded-full bg-brand px-6 py-3 text-center text-sm font-semibold text-white shadow-card transition hover:bg-brand-deep"
-            >
-              Start 14-day free trial
-            </a>
+            <div className="mt-auto pt-8">
+              <a
+                href="mailto:hello@prestigeitsolutions.tech?subject=Prestige%20POS%3A%20Start%20Pro%20trial"
+                className="block rounded-full bg-brand px-6 py-3 text-center text-sm font-semibold text-white shadow-card transition hover:bg-brand-deep"
+              >
+                Start 14-day free trial
+              </a>
+              <p className="mt-2.5 text-center text-[11px] text-ink-subtle">
+                No card needed · Cancel anytime
+              </p>
+            </div>
           </div>
         </div>
 
-        <p className="mx-auto mt-8 max-w-xl text-center text-xs leading-relaxed text-ink-subtle">
+        <p className="mx-auto mt-8 max-w-xl text-center text-sm font-medium text-ink-muted">
+          Already powering real café counters in General Santos City. ☕
+        </p>
+        <p className="mx-auto mt-3 max-w-xl text-center text-xs leading-relaxed text-ink-subtle">
           Prices are per branch, VAT inclusive. Free updates and cloud backup on
           every plan. Upgrade, downgrade, or cancel anytime. Your data stays yours.
         </p>

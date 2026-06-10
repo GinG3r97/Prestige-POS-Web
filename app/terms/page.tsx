@@ -57,7 +57,7 @@ export default function Terms() {
           </p>
           <ul>
             <li>
-              <strong>Basic:</strong> &#8369;999 per month, per branch. Includes
+              <strong>Basic:</strong> &#8369;499 per month, per branch. Includes
               up to 100 items sold per day.
             </li>
             <li>
@@ -66,7 +66,7 @@ export default function Terms() {
             </li>
             <li>
               <strong>Yearly:</strong> pay for 10 months, get 12. That is
-              &#8369;9,990 a year for Basic or &#8369;14,990 a year for Pro.
+              &#8369;4,990 a year for Basic or &#8369;14,990 a year for Pro.
             </li>
           </ul>
           <p>
