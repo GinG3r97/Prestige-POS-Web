@@ -58,7 +58,7 @@ export default function Home() {
             </span>
             Made for Philippine cafés &amp; retail ☕
           </span>
-          <h1 className="mx-auto mt-6 max-w-3xl text-[40px] font-semibold leading-[1.05] tracking-tight text-ink md:text-[64px]">
+          <h1 className="mx-auto mt-6 max-w-3xl text-[34px] font-semibold leading-[1.08] tracking-tight text-ink sm:text-[40px] md:text-[64px] md:leading-[1.05]">
             The point-of-sale your
             <br className="hidden md:block" /> café{" "}
             <span className="bg-gradient-to-r from-brand-deep via-brand to-brand-deep bg-clip-text text-transparent">
@@ -66,7 +66,7 @@ export default function Home() {
             </span>
             .
           </h1>
-          <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-ink-muted">
+          <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-ink-muted md:text-lg">
             Prestige POS runs your whole counter on one iPad: selling, inventory,
             shifts, payroll, and printed receipts in one clean, fast app.
           </p>
@@ -124,7 +124,7 @@ export default function Home() {
       </section>
 
       {/* Showcase — deep dives with real-looking UI */}
-      <section id="showcase" className="mx-auto max-w-6xl space-y-20 px-5 py-20 md:space-y-28">
+      <section id="showcase" className="mx-auto max-w-6xl space-y-14 px-5 py-14 md:space-y-28 md:py-20">
         {[
           {
             tag: "Make it yours",
@@ -185,7 +185,7 @@ export default function Home() {
       </section>
 
       {/* Features */}
-      <section id="features" className="mx-auto max-w-6xl px-5 py-20">
+      <section id="features" className="mx-auto max-w-6xl px-5 py-14 md:py-20">
         <div className="mx-auto max-w-2xl text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-brand-soft bg-brand-tint px-3.5 py-1.5 text-xs font-semibold text-brand-deep">
             No add-ons to buy
@@ -226,7 +226,7 @@ export default function Home() {
       </section>
 
       {/* Plan finder — meet them where they are */}
-      <section id="fit" className="border-t border-hairline bg-surface-1 px-5 py-20">
+      <section id="fit" className="border-t border-hairline bg-surface-1 px-5 py-14 md:py-20">
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-ink md:text-[40px]">
@@ -245,7 +245,7 @@ export default function Home() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="border-t border-hairline bg-surface-2 px-5 py-20">
+      <section id="pricing" className="border-t border-hairline bg-surface-2 px-5 py-14 md:py-20">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-semibold tracking-tight text-ink md:text-[40px]">
             Simple pricing that pays for itself
@@ -364,7 +364,7 @@ export default function Home() {
 
       {/* CTA */}
       <section className="px-5 pb-20">
-        <div className="relative mx-auto max-w-5xl overflow-hidden rounded-[2rem] bg-brand-deep px-8 py-16 text-center text-white">
+        <div className="relative mx-auto max-w-5xl overflow-hidden rounded-[2rem] bg-brand-deep px-6 py-12 text-center text-white md:px-8 md:py-16">
           <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
           <div className="pointer-events-none absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-brand/30 blur-2xl" />
           <h2 className="relative mx-auto max-w-2xl text-3xl font-semibold tracking-tight md:text-[40px]">
