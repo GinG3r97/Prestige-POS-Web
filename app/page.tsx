@@ -182,35 +182,31 @@ export default function Home() {
           </h2>
           <p className="mt-4 text-lg text-ink-muted">One app. The whole store.</p>
         </div>
-        <div className="mt-12 space-y-10">
+        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
             { label: "Sell faster", items: [0, 10, 5] },
             { label: "Every sale covered", items: [1, 2, 9] },
             { label: "Run the back office", items: [3, 4, 7] },
             { label: "Stay in control", items: [6, 8, 11] },
           ].map((group) => (
-            <div key={group.label}>
-              <div className="mb-4 flex items-center gap-3">
-                <p className="text-xs font-bold uppercase tracking-widest text-brand-deep">{group.label}</p>
-                <span className="h-px flex-1 bg-hairline" />
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div
+              key={group.label}
+              className="rounded-xl2 border border-hairline bg-surface-1 p-6 shadow-card transition hover:-translate-y-1 hover:border-brand-soft"
+            >
+              <p className="text-xs font-bold uppercase tracking-widest text-brand-deep">{group.label}</p>
+              <ul className="mt-5 space-y-3.5">
                 {group.items.map((idx) => {
-                  const { title, desc, icon: Icon } = features[idx];
+                  const { title, icon: Icon } = features[idx];
                   return (
-                    <div
-                      key={title}
-                      className="group rounded-xl2 border border-hairline bg-surface-1 p-6 shadow-card transition hover:-translate-y-1 hover:border-brand-soft"
-                    >
-                      <div className="grid h-11 w-11 place-items-center rounded-xl bg-brand-tint text-brand-deep transition group-hover:bg-brand group-hover:text-white">
-                        <Icon size={21} strokeWidth={1.9} />
-                      </div>
-                      <h3 className="mt-4 text-base font-semibold text-ink">{title}</h3>
-                      <p className="mt-2 text-sm leading-relaxed text-ink-muted">{desc}</p>
-                    </div>
+                    <li key={title} className="flex items-center gap-3">
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-tint text-brand-deep">
+                        <Icon size={17} strokeWidth={1.9} />
+                      </span>
+                      <span className="text-sm font-medium leading-tight text-ink">{title}</span>
+                    </li>
                   );
                 })}
-              </div>
+              </ul>
             </div>
           ))}
         </div>
