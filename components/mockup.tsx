@@ -105,8 +105,8 @@ export function PosMockup() {
                   </div>
                   <p className="mt-2 truncate text-[11px] font-medium text-ink">{it.n}</p>
                   {it.custom ? (
-                    <p className="flex items-center gap-1 text-[10px] font-semibold text-brand-deep">
-                      Custom price <MIcon name="edit" size={10} />
+                    <p className="flex items-center gap-0.5 whitespace-nowrap text-[10px] font-semibold text-brand-deep">
+                      Custom <MIcon name="edit" size={10} />
                     </p>
                   ) : (
                     <p className="text-[11px] font-semibold text-brand-deep">{peso(it.p)}</p>
@@ -117,8 +117,9 @@ export function PosMockup() {
           </div>
         </div>
 
-        {/* order panel — mirrors the app's Current Order pane */}
-        <div className="flex flex-col border-t border-hairline bg-surface-1 p-4 md:col-span-2 md:border-l md:border-t-0">
+        {/* order panel — mirrors the app's Current Order pane (desktop/tablet
+            only; on phones the grid alone keeps the hero short) */}
+        <div className="hidden flex-col border-t border-hairline bg-surface-1 p-4 md:col-span-2 md:flex md:border-l md:border-t-0">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[12px] font-semibold text-ink">Current Order</p>

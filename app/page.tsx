@@ -164,7 +164,7 @@ export default function Home() {
         ].map((row, i) => (
           <div
             key={row.title}
-            className={`flex flex-col items-center gap-10 md:gap-14 ${i % 2 === 1 ? "md:flex-row-reverse" : "md:flex-row"}`}
+            className={`flex flex-col items-center gap-8 md:gap-14 ${i % 2 === 1 ? "md:flex-row-reverse" : "md:flex-row"}`}
           >
             <div className="flex-1">
               <span className="text-xs font-semibold uppercase tracking-wide text-brand-deep">{row.tag}</span>
@@ -179,7 +179,9 @@ export default function Home() {
                 ))}
               </ul>
             </div>
-            <div className="w-full flex-1">{row.mockup}</div>
+            {/* keep mobile short: only the first 2 deep-dives show their
+                mockup on phones; the rest rely on the copy + checkmarks */}
+            <div className={`w-full flex-1 ${i >= 2 ? "hidden md:block" : ""}`}>{row.mockup}</div>
           </div>
         ))}
       </section>
