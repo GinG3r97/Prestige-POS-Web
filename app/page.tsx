@@ -27,18 +27,18 @@ import {
 type Feature = { title: string; desc: string; icon: LucideIcon };
 
 const features: Feature[] = [
-  { title: "Lightning-fast checkout", desc: "Tap to ring up items, add sizes & extras, hold and resume orders. Built for a busy counter.", icon: Zap },
-  { title: "Clean, printed receipts", desc: "VAT breakdown, order numbers, and instant thermal printing. Every sale is documented.", icon: ReceiptText },
-  { title: "Senior & PWD discounts", desc: "The 20% discount with VAT exemption, applied correctly and saved to your records every time.", icon: BadgePercent },
-  { title: "Inventory & stock", desc: "Track stock levels, restock, and run stock-takes so you always know what's on hand.", icon: Boxes },
-  { title: "Shifts & cash counts", desc: "Open and close cashier shifts with a cash count, so every handover is clean and accountable.", icon: Clock },
-  { title: "Flexible payments", desc: "Accept cash, GCash, QR Ph, and bank transfer. Record references straight into your books.", icon: Wallet },
-  { title: "Staff roles & PINs", desc: "Give each cashier a secure PIN and the right permissions. Owners stay fully in control.", icon: KeyRound },
-  { title: "Payroll & timekeeping", desc: "Philippine-ready payroll with rates, leaves, and payslips. Pay your team without spreadsheets.", icon: Banknote },
-  { title: "Dashboard & reports", desc: "See daily sales, best sellers, and your average ticket at a glance, from any device.", icon: BarChart3 },
-  { title: "Bluetooth printing", desc: "Pair a thermal printer for receipts and end-of-day summaries, or pop the cash drawer instantly.", icon: Printer },
-  { title: "Modifiers & add-ons", desc: "Sizes, milk choices, espresso shots and more, each priced automatically.", icon: SlidersHorizontal },
-  { title: "Multiple branches", desc: "Run several locations from one account, each with its own staff, stock, and reports.", icon: Building2 },
+  { title: "Lightning-fast checkout", desc: "Tap, customize, charge. Built for the rush.", icon: Zap },
+  { title: "Clean, printed receipts", desc: "VAT breakdown and instant thermal printing.", icon: ReceiptText },
+  { title: "Senior & PWD discounts", desc: "The 20% discount, applied right every time.", icon: BadgePercent },
+  { title: "Inventory & stock", desc: "Always know what's on hand.", icon: Boxes },
+  { title: "Shifts & cash counts", desc: "Clean, accountable cashier handovers.", icon: Clock },
+  { title: "Flexible payments", desc: "Cash, GCash, QR Ph, and bank transfer.", icon: Wallet },
+  { title: "Staff roles & PINs", desc: "The right access for every cashier.", icon: KeyRound },
+  { title: "Payroll & timekeeping", desc: "Rates, leaves, and payslips. No spreadsheets.", icon: Banknote },
+  { title: "Dashboard & reports", desc: "Sales, best sellers, and average ticket, live.", icon: BarChart3 },
+  { title: "Bluetooth printing", desc: "Receipts, summaries, and the cash drawer.", icon: Printer },
+  { title: "Modifiers & add-ons", desc: "Sizes, shots, and extras, priced automatically.", icon: SlidersHorizontal },
+  { title: "Multiple branches", desc: "Every location in one account.", icon: Building2 },
 ];
 
 export default function Home() {
