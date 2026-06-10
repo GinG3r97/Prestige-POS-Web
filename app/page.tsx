@@ -230,10 +230,10 @@ export default function Home() {
             <p className="text-sm font-semibold uppercase tracking-wide text-ink-muted">Basic</p>
             <p className="mt-1 text-sm text-ink-muted">Everything your cashier needs to sell and track orders.</p>
             <div className="mt-5 flex items-baseline gap-1.5">
-              <span className="text-[44px] font-semibold leading-none tracking-tight text-ink">₱499</span>
+              <span className="text-[44px] font-semibold leading-none tracking-tight text-ink">₱999</span>
               <span className="text-sm text-ink-muted">/month per branch</span>
             </div>
-            <p className="mt-1.5 text-xs text-ink-subtle">or ₱4,990 a year (2 months free)</p>
+            <p className="mt-1.5 text-xs text-ink-subtle">or ₱9,990 a year (2 months free)</p>
             <ul className="mt-6 space-y-2.5 text-sm text-ink">
               {[
                 "Fast Sell screen for the cashier",
@@ -266,11 +266,11 @@ export default function Home() {
             <p className="text-sm font-semibold uppercase tracking-wide text-brand-deep">Pro</p>
             <p className="mt-1 text-sm text-ink-muted">The whole business. Everything Prestige can do.</p>
             <div className="mt-5 flex items-baseline gap-1.5">
-              <span className="text-[44px] font-semibold leading-none tracking-tight text-ink">₱999</span>
+              <span className="text-[44px] font-semibold leading-none tracking-tight text-ink">₱1,499</span>
               <span className="text-sm text-ink-muted">/month per branch</span>
             </div>
             <p className="mt-1.5 text-xs text-ink-subtle">
-              or ₱9,990 a year (2 months free). That is about ₱33 a day.
+              or ₱14,990 a year (2 months free). That is about ₱49 a day.
             </p>
             <p className="mt-4 text-[13px] font-semibold text-ink">Everything in Basic, plus:</p>
             <ul className="mt-3 space-y-2.5 text-sm text-ink">
