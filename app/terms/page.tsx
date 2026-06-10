@@ -57,10 +57,12 @@ export default function Terms() {
           </p>
           <ul>
             <li>
-              <strong>Basic:</strong> &#8369;999 per month, per branch.
+              <strong>Basic:</strong> &#8369;999 per month, per branch. Includes
+              up to 100 items sold per day.
             </li>
             <li>
-              <strong>Pro:</strong> &#8369;1,499 per month, per branch.
+              <strong>Pro:</strong> &#8369;1,499 per month, per branch. No daily
+              limit.
             </li>
             <li>
               <strong>Yearly:</strong> pay for 10 months, get 12. That is

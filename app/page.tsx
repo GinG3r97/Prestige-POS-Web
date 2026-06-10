@@ -236,6 +236,7 @@ export default function Home() {
             <p className="mt-1.5 text-xs text-ink-subtle">or ₱9,990 a year (2 months free)</p>
             <ul className="mt-6 space-y-2.5 text-sm text-ink">
               {[
+                "Up to 100 items sold per day",
                 "Fast Sell screen for the cashier",
                 "Sizes, add-ons & custom prices",
                 "Search, void & refund orders",
@@ -275,6 +276,7 @@ export default function Home() {
             <p className="mt-4 text-[13px] font-semibold text-ink">Everything in Basic, plus:</p>
             <ul className="mt-3 space-y-2.5 text-sm text-ink">
               {[
+                "Unlimited daily sales",
                 "Inventory that auto-deducts on every sale",
                 "Recipes & ingredient tracking",
                 "Low-stock alerts & stock value",
