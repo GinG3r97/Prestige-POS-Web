@@ -1,5 +1,6 @@
 import { Header, Footer } from "@/components/site";
 import { PosMockup } from "@/components/mockup";
+import { PlanFinder } from "@/components/plan-finder";
 import {
   SellCustomizeMockup,
   InventoryMockup,
@@ -209,6 +210,25 @@ export default function Home() {
               </ul>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Plan finder — meet them where they are */}
+      <section id="fit" className="border-t border-hairline bg-surface-1 px-5 py-20">
+        <div className="mx-auto max-w-6xl">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-3xl font-semibold tracking-tight text-ink md:text-[40px]">
+              Which one is you?
+            </h2>
+            <p className="mt-4 text-lg text-ink-muted">
+              99.6% of businesses in the Philippines are micro, small, or medium.
+              Prestige was built for every single one. Tap your setup and see
+              your fit.
+            </p>
+          </div>
+          <div className="mt-10">
+            <PlanFinder />
+          </div>
         </div>
       </section>
 
