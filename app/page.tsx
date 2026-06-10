@@ -22,6 +22,7 @@ import {
   SlidersHorizontal,
   Building2,
   Check,
+  ArrowRight,
   type LucideIcon,
 } from "lucide-react";
 
@@ -51,12 +52,19 @@ export default function Home() {
       <section className="hero-glow overflow-hidden">
         <div className="mx-auto max-w-6xl px-5 pb-4 pt-16 text-center md:pt-24">
           <span className="inline-flex items-center gap-2 rounded-full border border-brand-soft bg-surface-1/80 px-3.5 py-1.5 text-xs font-medium text-brand-deep shadow-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-            Made for Philippine cafés &amp; retail
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-60" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-brand" />
+            </span>
+            Made for Philippine cafés &amp; retail ☕
           </span>
           <h1 className="mx-auto mt-6 max-w-3xl text-[40px] font-semibold leading-[1.05] tracking-tight text-ink md:text-[64px]">
             The point-of-sale your
-            <br className="hidden md:block" /> café actually enjoys.
+            <br className="hidden md:block" /> café{" "}
+            <span className="bg-gradient-to-r from-brand-deep via-brand to-brand-deep bg-clip-text text-transparent">
+              actually enjoys
+            </span>
+            .
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-ink-muted">
             Prestige POS runs your whole counter on one iPad: selling, inventory,
@@ -65,15 +73,16 @@ export default function Home() {
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
               href="#pricing"
-              className="rounded-full bg-brand px-7 py-3.5 text-sm font-semibold text-white shadow-card transition hover:bg-brand-deep"
+              className="group inline-flex items-center gap-2 rounded-full bg-brand px-7 py-3.5 text-sm font-semibold text-white shadow-[0_10px_30px_-10px_rgba(142,110,73,0.6)] transition hover:bg-brand-deep"
             >
               Start free trial
+              <ArrowRight size={16} className="transition group-hover:translate-x-0.5" />
             </a>
             <a
-              href="#features"
+              href="#fit"
               className="rounded-full border border-hairline bg-surface-1 px-7 py-3.5 text-sm font-semibold text-ink transition hover:bg-surface-3"
             >
-              See features
+              Which plan fits me?
             </a>
           </div>
           <p className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-xs text-ink-subtle">
@@ -84,9 +93,12 @@ export default function Home() {
           </p>
         </div>
 
-        {/* product mockup */}
-        <div className="mx-auto mt-12 max-w-4xl px-5 pb-20">
-          <PosMockup />
+        {/* product mockup with a warm glow */}
+        <div className="relative mx-auto mt-12 max-w-4xl px-5 pb-20">
+          <div className="pointer-events-none absolute inset-x-10 top-6 -z-0 h-3/4 rounded-full bg-brand/25 blur-3xl" />
+          <div className="relative">
+            <PosMockup />
+          </div>
         </div>
       </section>
 
@@ -342,7 +354,7 @@ export default function Home() {
         </div>
 
         <p className="mx-auto mt-8 max-w-xl text-center text-sm font-medium text-ink-muted">
-          Already powering real café counters in General Santos City. ☕
+          Already powering real café counters across the Philippines. ☕
         </p>
         <p className="mx-auto mt-3 max-w-xl text-center text-xs leading-relaxed text-ink-subtle">
           Prices are per branch, VAT inclusive. Free updates and cloud backup on
