@@ -58,18 +58,17 @@ export default function Home() {
             </span>
             Made for Philippine cafés &amp; retail
           </span>
-          <h1 className="rise rise-1 mx-auto mt-4 max-w-3xl text-[30px] font-semibold leading-[1.1] tracking-tight text-ink sm:text-[40px] md:mt-6 md:text-[64px] md:leading-[1.05]">
-            The point-of-sale your
-            <br className="hidden md:block" /> café{" "}
+          <h1 className="rise rise-1 mx-auto mt-4 max-w-3xl text-[34px] font-semibold leading-[1.1] tracking-tight text-ink sm:text-[44px] md:mt-6 md:text-[68px] md:leading-[1.05]">
+            Sell more. Stress less.
+            <br />
             <span className="bg-gradient-to-r from-brand-deep via-brand to-brand-deep bg-clip-text text-transparent">
-              actually enjoys
+              Grow faster.
             </span>
-            .
           </h1>
           <p className="rise rise-2 mx-auto mt-3 max-w-xl text-[14px] leading-relaxed text-ink-muted md:mt-5 md:text-lg">
-            Sell faster, never run out of stock, pay your team on time, and hand
-            every customer a clean printed receipt. All from one tablet, Android
-            or iPad.
+            The POS that rings up sales in seconds, never lets you run out of
+            stock, and pays your team on time. All from one tablet, Android or
+            iPad.
           </p>
           <div className="rise rise-3 mt-5 flex flex-row flex-wrap items-center justify-center gap-2.5 md:mt-8 md:gap-3">
             <a
