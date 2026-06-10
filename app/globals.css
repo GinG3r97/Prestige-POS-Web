@@ -29,6 +29,20 @@ body {
   @apply bg-surface-2 text-ink antialiased;
 }
 
+/* Staged fade-up entrance for the hero (badge → headline → copy → CTAs → mockup). */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+.rise   { animation: rise 0.55s ease-out both; }
+.rise-1 { animation-delay: 0.07s; }
+.rise-2 { animation-delay: 0.14s; }
+.rise-3 { animation-delay: 0.21s; }
+.rise-4 { animation-delay: 0.3s; }
+@media (prefers-reduced-motion: reduce) {
+  .rise { animation: none; }
+}
+
 /* Subtle warm gradient used behind the hero. */
 .hero-glow {
   background:

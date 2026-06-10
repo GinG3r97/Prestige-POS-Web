@@ -51,14 +51,14 @@ export default function Home() {
       {/* Hero */}
       <section className="hero-glow overflow-hidden">
         <div className="mx-auto max-w-6xl px-5 pb-4 pt-16 text-center md:pt-24">
-          <span className="inline-flex items-center gap-2 rounded-full border border-brand-soft bg-surface-1/80 px-3.5 py-1.5 text-xs font-medium text-brand-deep shadow-sm">
+          <span className="rise inline-flex items-center gap-2 rounded-full border border-brand-soft bg-surface-1/80 px-3.5 py-1.5 text-xs font-medium text-brand-deep shadow-sm">
             <span className="relative flex h-1.5 w-1.5">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-60" />
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-brand" />
             </span>
             Made for Philippine cafés &amp; retail ☕
           </span>
-          <h1 className="mx-auto mt-4 max-w-3xl text-[30px] font-semibold leading-[1.1] tracking-tight text-ink sm:text-[40px] md:mt-6 md:text-[64px] md:leading-[1.05]">
+          <h1 className="rise rise-1 mx-auto mt-4 max-w-3xl text-[30px] font-semibold leading-[1.1] tracking-tight text-ink sm:text-[40px] md:mt-6 md:text-[64px] md:leading-[1.05]">
             The point-of-sale your
             <br className="hidden md:block" /> café{" "}
             <span className="bg-gradient-to-r from-brand-deep via-brand to-brand-deep bg-clip-text text-transparent">
@@ -66,11 +66,11 @@ export default function Home() {
             </span>
             .
           </h1>
-          <p className="mx-auto mt-3 max-w-xl text-[14px] leading-relaxed text-ink-muted md:mt-5 md:text-lg">
+          <p className="rise rise-2 mx-auto mt-3 max-w-xl text-[14px] leading-relaxed text-ink-muted md:mt-5 md:text-lg">
             Prestige POS runs your whole counter on one iPad: selling, inventory,
             shifts, payroll, and printed receipts in one clean, fast app.
           </p>
-          <div className="mt-5 flex flex-row flex-wrap items-center justify-center gap-2.5 md:mt-8 md:gap-3">
+          <div className="rise rise-3 mt-5 flex flex-row flex-wrap items-center justify-center gap-2.5 md:mt-8 md:gap-3">
             <a
               href="#pricing"
               className="group inline-flex items-center gap-1.5 rounded-full bg-brand px-5 py-3 text-[13px] font-semibold text-white shadow-[0_10px_30px_-10px_rgba(142,110,73,0.6)] transition hover:bg-brand-deep md:px-7 md:py-3.5 md:text-sm"
@@ -96,7 +96,7 @@ export default function Home() {
         {/* product mockup with a warm glow. Phones get the FULL desktop
             two-pane layout rendered at 760px and scaled down whole, so the
             hero shows the real composition without the height cost. */}
-        <div className="relative mx-auto mt-8 max-w-4xl px-5 pb-12 md:mt-12 md:pb-20">
+        <div className="rise rise-4 relative mx-auto mt-8 max-w-4xl px-5 pb-12 md:mt-12 md:pb-20">
           <div className="pointer-events-none absolute inset-x-10 top-6 -z-0 h-3/4 rounded-full bg-brand/25 blur-3xl" />
           <div className="relative hidden sm:block">
             <PosMockup />
@@ -108,6 +108,12 @@ export default function Home() {
               </div>
             </div>
           </div>
+          <p className="relative mt-4 text-center text-[11px] text-ink-subtle md:text-xs">
+            That&apos;s the real Sell screen, exactly what your cashier sees.{" "}
+            <a href="#showcase" className="font-semibold text-brand-deep underline underline-offset-2">
+              See it in action
+            </a>
+          </p>
         </div>
       </section>
 
