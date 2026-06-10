@@ -28,16 +28,16 @@ type Feature = { title: string; desc: string; icon: LucideIcon };
 
 const features: Feature[] = [
   { title: "Lightning-fast checkout", desc: "Tap to ring up items, add sizes & extras, hold and resume orders. Built for a busy counter.", icon: Zap },
-  { title: "BIR-ready receipts", desc: "Sales Invoice format, VAT breakdown, sequential numbering, Z-readings and e-Journal — handled.", icon: ReceiptText },
-  { title: "Senior & PWD discounts", desc: "20% discount with VAT exemption, applied correctly and logged for your records — every time.", icon: BadgePercent },
+  { title: "Clean, printed receipts", desc: "VAT breakdown, order numbers, and instant thermal printing. Every sale is documented.", icon: ReceiptText },
+  { title: "Senior & PWD discounts", desc: "The 20% discount with VAT exemption, applied correctly and saved to your records every time.", icon: BadgePercent },
   { title: "Inventory & stock", desc: "Track stock levels, restock, and run stock-takes so you always know what's on hand.", icon: Boxes },
-  { title: "Shifts & Z-readings", desc: "Open and close cashier shifts with a cash count and over/short — clean, accountable handovers.", icon: Clock },
+  { title: "Shifts & cash counts", desc: "Open and close cashier shifts with a cash count, so every handover is clean and accountable.", icon: Clock },
   { title: "Flexible payments", desc: "Accept cash, GCash, QR Ph, and bank transfer. Record references straight into your books.", icon: Wallet },
   { title: "Staff roles & PINs", desc: "Give each cashier a secure PIN and the right permissions. Owners stay fully in control.", icon: KeyRound },
-  { title: "Payroll & timekeeping", desc: "Philippine-ready payroll with rates, leaves, and payslips — pay your team without spreadsheets.", icon: Banknote },
-  { title: "Dashboard & reports", desc: "Daily sales, best-selling items, and average ticket at a glance — from any device.", icon: BarChart3 },
-  { title: "Bluetooth printing", desc: "Pair a thermal printer for receipts and Z-readings, or pop the cash drawer — instantly.", icon: Printer },
-  { title: "Modifiers & add-ons", desc: "Sizes, milk choices, espresso shots and more — priced automatically per item.", icon: SlidersHorizontal },
+  { title: "Payroll & timekeeping", desc: "Philippine-ready payroll with rates, leaves, and payslips. Pay your team without spreadsheets.", icon: Banknote },
+  { title: "Dashboard & reports", desc: "See daily sales, best sellers, and your average ticket at a glance, from any device.", icon: BarChart3 },
+  { title: "Bluetooth printing", desc: "Pair a thermal printer for receipts and end-of-day summaries, or pop the cash drawer instantly.", icon: Printer },
+  { title: "Modifiers & add-ons", desc: "Sizes, milk choices, espresso shots and more, each priced automatically.", icon: SlidersHorizontal },
   { title: "Multiple branches", desc: "Run several locations from one account, each with its own staff, stock, and reports.", icon: Building2 },
 ];
 
@@ -58,15 +58,15 @@ export default function Home() {
             <br className="hidden md:block" /> café actually enjoys.
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-ink-muted">
-            Prestige POS runs the whole counter on your iPad — selling, inventory,
-            shifts, payroll, and BIR-compliant receipts — in one clean, fast app.
+            Prestige POS runs your whole counter on one iPad: selling, inventory,
+            shifts, payroll, and printed receipts in one clean, fast app.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
-              href="mailto:hello@prestigeitsolutions.tech?subject=Prestige%20POS%20—%20Get%20started"
+              href="#pricing"
               className="rounded-full bg-brand px-7 py-3.5 text-sm font-semibold text-white shadow-card transition hover:bg-brand-deep"
             >
-              Get started
+              Start free trial
             </a>
             <a
               href="#features"
@@ -76,6 +76,7 @@ export default function Home() {
             </a>
           </div>
           <p className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-xs text-ink-subtle">
+            <span className="inline-flex items-center gap-1.5"><Check size={13} className="text-brand" /> 14-day free trial</span>
             <span className="inline-flex items-center gap-1.5"><Check size={13} className="text-brand" /> iPad &amp; tablet ready</span>
             <span className="inline-flex items-center gap-1.5"><Check size={13} className="text-brand" /> Cash, GCash &amp; QR Ph</span>
             <span className="inline-flex items-center gap-1.5"><Check size={13} className="text-brand" /> No long contracts</span>
@@ -92,7 +93,7 @@ export default function Home() {
       <section id="philippines" className="border-y border-hairline bg-surface-1">
         <div className="mx-auto grid max-w-6xl gap-5 px-5 py-12 sm:grid-cols-3">
           {[
-            { k: "BIR-compliant", v: "Sales Invoice format, VAT, Z-readings & e-Journal — built in." },
+            { k: "Made for PH stores", v: "Peso-first pricing, VAT breakdown, and the way counters here actually run." },
             { k: "Senior / PWD", v: "Correct 20% discount with VAT exemption, logged automatically." },
             { k: "GCash & QR Ph", v: "Take the payments your customers already use, with references." },
           ].map((x) => (
@@ -115,7 +116,7 @@ export default function Home() {
           {
             tag: "Make it yours",
             title: "Customize your Sell screen",
-            body: "Arrange your menu exactly how your staff think. Drag to reorder, group items by type, and add or hide products in seconds — no developer, no waiting.",
+            body: "Arrange your menu exactly how your staff think. Drag to reorder, group items by type, and add or hide products in seconds. No developer needed.",
             points: ["Drag-and-drop reorder", "Group by type & sub-type", "Add or hide items instantly"],
             mockup: <SellCustomizeMockup />,
           },
@@ -129,7 +130,7 @@ export default function Home() {
           {
             tag: "No spreadsheets",
             title: "Run payroll in minutes",
-            body: "Timesheets, rates, bonuses and deductions roll into a clean pay run. See net payable per employee — and for the whole team — then mark it paid.",
+            body: "Timesheets, rates, bonuses and deductions roll into a clean pay run. See what each employee takes home and the total for the team, then mark it paid.",
             points: ["Hourly, daily & salaried", "Bonuses & deductions", "Net payable, ready to pay"],
             mockup: <PayrollMockup />,
           },
@@ -143,7 +144,7 @@ export default function Home() {
           {
             tag: "Know your numbers",
             title: "Your day, at a glance",
-            body: "Today's revenue, orders, average ticket and top sellers — live on your dashboard from any device, so you always know how the store is doing.",
+            body: "Today's revenue, orders, average ticket and top sellers, live on your dashboard from any device. You always know how the store is doing.",
             points: ["Live revenue & orders", "Average ticket", "Top sellers today"],
             mockup: <DashboardMockup />,
           },
@@ -177,8 +178,8 @@ export default function Home() {
             Everything the counter needs
           </h2>
           <p className="mt-4 text-lg text-ink-muted">
-            One app for selling, stock, staff, and the books — so you focus on your
-            customers, not your software.
+            One app for selling, stock, staff, and the books, so you can focus on
+            your customers instead of your software.
           </p>
         </div>
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -197,6 +198,101 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Pricing */}
+      <section id="pricing" className="border-t border-hairline bg-surface-2 px-5 py-20">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-3xl font-semibold tracking-tight text-ink md:text-[40px]">
+            Simple pricing that pays for itself
+          </h2>
+          <p className="mt-4 text-lg text-ink-muted">
+            Try everything free for 14 days, no card needed. Then pick the plan
+            that fits your store. Cancel anytime.
+          </p>
+        </div>
+
+        <div className="mx-auto mt-12 grid max-w-4xl items-stretch gap-6 md:grid-cols-2">
+          {/* Basic */}
+          <div className="flex flex-col rounded-[1.5rem] border border-hairline bg-surface-1 p-7 shadow-card">
+            <p className="text-sm font-semibold uppercase tracking-wide text-ink-muted">Basic</p>
+            <p className="mt-1 text-sm text-ink-muted">Everything your cashier needs to sell and track orders.</p>
+            <div className="mt-5 flex items-baseline gap-1.5">
+              <span className="text-[44px] font-semibold leading-none tracking-tight text-ink">₱499</span>
+              <span className="text-sm text-ink-muted">/month per branch</span>
+            </div>
+            <p className="mt-1.5 text-xs text-ink-subtle">or ₱4,990 a year (2 months free)</p>
+            <ul className="mt-6 space-y-2.5 text-sm text-ink">
+              {[
+                "Fast Sell screen for the cashier",
+                "Sizes, add-ons & custom prices",
+                "Search, void & refund orders",
+                "Printed receipts (Bluetooth thermal)",
+                "Cash, GCash & QR Ph payments",
+                "Senior & PWD discounts",
+                "1 branch · 2 staff PINs",
+              ].map((pt) => (
+                <li key={pt} className="flex items-start gap-2.5">
+                  <Check size={16} className="mt-0.5 shrink-0 text-brand" />
+                  {pt}
+                </li>
+              ))}
+            </ul>
+            <a
+              href="mailto:hello@prestigeitsolutions.tech?subject=Prestige%20POS%3A%20Start%20Basic"
+              className="mt-8 rounded-full border border-hairline bg-surface-1 px-6 py-3 text-center text-sm font-semibold text-ink transition hover:bg-surface-3"
+            >
+              Start with Basic
+            </a>
+          </div>
+
+          {/* Pro */}
+          <div className="relative flex flex-col rounded-[1.5rem] border-2 border-brand bg-surface-1 p-7 shadow-card">
+            <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-brand px-4 py-1.5 text-xs font-semibold text-white shadow-card">
+              Most popular
+            </span>
+            <p className="text-sm font-semibold uppercase tracking-wide text-brand-deep">Pro</p>
+            <p className="mt-1 text-sm text-ink-muted">The whole business. Everything Prestige can do.</p>
+            <div className="mt-5 flex items-baseline gap-1.5">
+              <span className="text-[44px] font-semibold leading-none tracking-tight text-ink">₱999</span>
+              <span className="text-sm text-ink-muted">/month per branch</span>
+            </div>
+            <p className="mt-1.5 text-xs text-ink-subtle">
+              or ₱9,990 a year (2 months free). That is about ₱33 a day.
+            </p>
+            <p className="mt-4 text-[13px] font-semibold text-ink">Everything in Basic, plus:</p>
+            <ul className="mt-3 space-y-2.5 text-sm text-ink">
+              {[
+                "Inventory that auto-deducts on every sale",
+                "Recipes & ingredient tracking",
+                "Low-stock alerts & stock value",
+                "Shifts, cash counts & end-of-day reports",
+                "Dashboard & sales reports",
+                "Staff roles, PINs & schedules",
+                "Payroll & timekeeping (PH-ready)",
+                "Bookings & timed sessions",
+                "Multiple branches, one account",
+                "Unlimited staff · Priority support",
+              ].map((pt) => (
+                <li key={pt} className="flex items-start gap-2.5">
+                  <Check size={16} className="mt-0.5 shrink-0 text-brand" />
+                  {pt}
+                </li>
+              ))}
+            </ul>
+            <a
+              href="mailto:hello@prestigeitsolutions.tech?subject=Prestige%20POS%3A%20Start%20Pro%20trial"
+              className="mt-8 rounded-full bg-brand px-6 py-3 text-center text-sm font-semibold text-white shadow-card transition hover:bg-brand-deep"
+            >
+              Start 14-day free trial
+            </a>
+          </div>
+        </div>
+
+        <p className="mx-auto mt-8 max-w-xl text-center text-xs leading-relaxed text-ink-subtle">
+          Prices are per branch, VAT inclusive. Free updates and cloud backup on
+          every plan. Upgrade, downgrade, or cancel anytime. Your data stays yours.
+        </p>
+      </section>
+
       {/* CTA */}
       <section className="px-5 pb-20">
         <div className="relative mx-auto max-w-5xl overflow-hidden rounded-[2rem] bg-brand-deep px-8 py-16 text-center text-white">
@@ -206,14 +302,13 @@ export default function Home() {
             Ready to run your store on Prestige POS?
           </h2>
           <p className="relative mx-auto mt-4 max-w-xl text-brand-soft">
-            Tell us about your business and we'll get you set up — most cafés are
-            selling on day one.
+            Try Pro free for 14 days. Most cafés are selling on day one.
           </p>
           <a
-            href="mailto:hello@prestigeitsolutions.tech?subject=Prestige%20POS%20—%20Get%20started"
+            href="#pricing"
             className="relative mt-8 inline-block rounded-full bg-white px-8 py-3.5 text-sm font-semibold text-brand-deep transition hover:bg-brand-tint"
           >
-            Get started
+            See plans &amp; start free
           </a>
         </div>
       </section>

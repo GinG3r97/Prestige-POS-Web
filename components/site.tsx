@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MobileNav } from "./mobile-nav";
 
 export function Logo({ className = "" }: { className?: string }) {
   return (
@@ -29,16 +30,20 @@ export function Header() {
         <Logo />
         <nav className="hidden items-center gap-8 text-sm font-medium text-ink-muted md:flex">
           <a href="/#features" className="hover:text-ink">Features</a>
-          <a href="/#philippines" className="hover:text-ink">BIR-ready</a>
+          <a href="/#pricing" className="hover:text-ink">Pricing</a>
+          <a href="/#philippines" className="hover:text-ink">Built for PH</a>
           <Link href="/privacy" className="hover:text-ink">Privacy</Link>
           <a href="mailto:hello@prestigeitsolutions.tech" className="hover:text-ink">Contact</a>
         </nav>
-        <a
-          href="mailto:hello@prestigeitsolutions.tech?subject=Prestige%20POS%20—%20Get%20started"
-          className="rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white shadow-card transition hover:bg-brand-deep"
-        >
-          Get started
-        </a>
+        <div className="flex items-center gap-3">
+          <a
+            href="/#pricing"
+            className="hidden rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white shadow-card transition hover:bg-brand-deep md:inline-block"
+          >
+            Get started
+          </a>
+          <MobileNav />
+        </div>
       </div>
     </header>
   );
@@ -52,8 +57,8 @@ export function Footer() {
           <div className="max-w-sm">
             <Logo />
             <p className="mt-3 text-sm leading-relaxed text-ink-muted">
-              A fast, BIR-ready point-of-sale for Philippine cafés, restaurants,
-              and shops — built by Prestige IT Solutions.
+              A fast, modern point-of-sale for Philippine cafés, restaurants,
+              and shops, built by Prestige IT Solutions.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-10 text-sm sm:grid-cols-3">
@@ -61,7 +66,8 @@ export function Footer() {
               <p className="font-semibold text-ink">Product</p>
               <ul className="mt-3 space-y-2 text-ink-muted">
                 <li><a href="/#features" className="hover:text-ink">Features</a></li>
-                <li><a href="/#philippines" className="hover:text-ink">BIR compliance</a></li>
+                <li><a href="/#pricing" className="hover:text-ink">Pricing</a></li>
+                <li><a href="/#philippines" className="hover:text-ink">Built for PH</a></li>
               </ul>
             </div>
             <div>

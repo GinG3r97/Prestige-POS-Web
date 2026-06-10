@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import { Header, Footer } from "@/components/site";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — Prestige POS",
+  title: "Privacy Policy | Prestige POS",
   description: "How Prestige POS collects, uses, and protects your data.",
 };
 
-const EFFECTIVE = "June 7, 2026";
+const EFFECTIVE = "June 11, 2026";
 
 export default function Privacy() {
   return (
@@ -17,101 +17,104 @@ export default function Privacy() {
         <h1 className="mt-2 text-4xl font-semibold tracking-tight text-ink">
           Privacy Policy
         </h1>
-        <p className="mt-3 text-sm text-ink-subtle">Effective {EFFECTIVE}</p>
+        <p className="mt-3 text-sm text-ink-subtle">Last updated {EFFECTIVE}</p>
 
         <div className="prose-legal mt-8">
           <p>
-            Prestige IT Solutions (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or
-            &ldquo;our&rdquo;) respects your privacy. This Privacy Policy explains
-            what information the Prestige POS application (&ldquo;the App&rdquo;)
-            collects, how we use it, and the choices you have.
+            Your store&rsquo;s data is the heart of your business, so we keep
+            this simple and honest. This policy explains what Prestige POS
+            collects, why, where it lives, and what you can do with it. It is
+            written by Prestige IT Solutions (&ldquo;we&rdquo; or
+            &ldquo;us&rdquo;) of General Santos City, Philippines.
           </p>
 
-          <h2>Information we collect</h2>
+          <h2>What we collect</h2>
           <ul>
             <li>
-              <strong>Account information</strong> — your email address and owner
-              name, used to create and secure your account.
+              <strong>Account information:</strong> your email address and
+              owner name, so we can create and protect your account.
             </li>
             <li>
-              <strong>Business data you enter</strong> — your store details,
-              products, prices, inventory, staff, and the sales and orders you
-              record. This is used solely to operate the point-of-sale for you.
+              <strong>Your business records:</strong> the store details,
+              products, prices, inventory, staff, sales, and orders you enter.
+              We store these for one reason only: so the app works for you.
             </li>
             <li>
-              <strong>Payment records</strong> — card and e-wallet payments are
-              processed outside the App. We store only the amount and any reference
-              number you enter, for your own records. We do not collect or store
-              cardholder data.
+              <strong>Device basics:</strong> simple technical details like
+              app version and device type, which help us fix bugs and keep
+              things running smoothly.
+            </li>
+            <li>
+              <strong>Payment notes:</strong> card and e-wallet payments from
+              your customers happen outside the app. We keep only the amount
+              and any reference number you type in, for your own records. We
+              never collect or store cardholder data.
             </li>
           </ul>
 
-          <h2>How we use your information</h2>
+          <h2>Why we collect it</h2>
           <ul>
-            <li>To provide and operate the point-of-sale service for your store.</li>
-            <li>To secure your account and prevent unauthorized access.</li>
-            <li>To provide support and respond to your requests.</li>
-            <li>To maintain, improve, and troubleshoot the App.</li>
+            <li>To run the point-of-sale service for your store.</li>
+            <li>To keep your account secure and block unauthorized access.</li>
+            <li>To answer your questions and support you.</li>
+            <li>To maintain, troubleshoot, and improve the app.</li>
           </ul>
 
-          <h2>What we do not do</h2>
+          <h2>Where your data lives</h2>
           <p>
-            We do not sell your data. We do not use your business or customer data
-            for advertising. We do not share your data with third parties except
-            trusted service providers who help us run the App (such as our secure
-            cloud database host), or where required by law.
+            Your data is stored in a secure cloud database hosted by Supabase.
+            It travels over encrypted connections (HTTPS/TLS) and sits behind
+            access controls. Inside the app, your account login and staff PINs
+            keep it locked to your team.
           </p>
 
-          <h2>How your data is protected</h2>
+          <h2>What we never do</h2>
           <p>
-            Your data is transmitted over encrypted connections (HTTPS/TLS) and
-            stored with our cloud provider under access controls. Access within the
-            App is protected by your account login and staff PINs.
+            We do not sell your data. We do not use your business or customer
+            records for advertising. We only share data with the trusted
+            providers that keep the app running, like our cloud database host,
+            or when the law requires it. That is the whole list.
           </p>
 
-          <h2>Data retention</h2>
+          <h2>How long we keep it</h2>
           <p>
-            We retain your business data for as long as your account is active so
-            the App can operate. When you delete your account, your store and its
-            associated data are removed from our active systems.
+            We keep your business data for as long as your account is active,
+            so the app can do its job. If you delete your account, your store
+            and its data are removed from our active systems.
           </p>
 
-          <h2>Your choices and rights</h2>
+          <h2>Your rights as the owner</h2>
           <ul>
             <li>
-              <strong>Access &amp; correction</strong> — you can view and edit your
-              store data at any time within the App.
+              <strong>Access and correction:</strong> view and edit your store
+              data anytime, right inside the app.
             </li>
             <li>
-              <strong>Account deletion</strong> — you can delete your account and
-              store data from within the App (Settings), or by contacting us.
+              <strong>Export:</strong> your data stays yours. Ask us for a
+              full export at any time and we will send it to you.
             </li>
             <li>
-              <strong>Requests</strong> — to access, correct, or delete data, email
-              us at{" "}
-              <a href="mailto:hello@prestigeitsolutions.tech">
-                hello@prestigeitsolutions.tech
-              </a>
-              .
+              <strong>Deletion:</strong> delete your account and store data
+              from inside the app (Settings), or email us and we will handle
+              it.
             </li>
           </ul>
 
           <h2>Children</h2>
           <p>
-            The App is intended for business use and is not directed to children
-            under 13. We do not knowingly collect personal information from
-            children.
+            Prestige POS is a business tool, not a kids&rsquo; app. We do not
+            knowingly collect personal information from children under 13.
           </p>
 
           <h2>Changes to this policy</h2>
           <p>
-            We may update this Privacy Policy from time to time. Material changes
-            will be reflected by updating the effective date above.
+            If we change this policy in a meaningful way, we will update the
+            date at the top and let you know.
           </p>
 
           <h2>Contact</h2>
           <p>
-            Questions about your privacy or this policy? Contact us at{" "}
+            Questions about your privacy? Email us anytime at{" "}
             <a href="mailto:hello@prestigeitsolutions.tech">
               hello@prestigeitsolutions.tech
             </a>
