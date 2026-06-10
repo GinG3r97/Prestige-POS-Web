@@ -12,11 +12,11 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://prestigeitsolutions.tech"),
   title: "Prestige POS | Point of Sale for Philippine cafés & retail",
   description:
-    "A fast, modern iPad point-of-sale for cafés, restaurants, and shops. Sell, track inventory, manage shifts and payroll, and print receipts, all in one app.",
+    "A fast, modern tablet point-of-sale for cafés, restaurants, and shops. Android and iPad. Sell, track inventory, manage shifts and payroll, and print receipts, all in one app.",
   openGraph: {
     title: "Prestige POS",
     description:
-      "A fast, modern iPad point-of-sale for cafés, restaurants, and shops.",
+      "A fast, modern tablet point-of-sale for cafés, restaurants, and shops. Android and iPad.",
     type: "website",
     url: "https://prestigeitsolutions.tech",
   },

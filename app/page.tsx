@@ -56,7 +56,7 @@ export default function Home() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-60" />
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-brand" />
             </span>
-            Made for Philippine cafés &amp; retail ☕
+            Made for Philippine cafés &amp; retail
           </span>
           <h1 className="rise rise-1 mx-auto mt-4 max-w-3xl text-[30px] font-semibold leading-[1.1] tracking-tight text-ink sm:text-[40px] md:mt-6 md:text-[64px] md:leading-[1.05]">
             The point-of-sale your
@@ -67,8 +67,9 @@ export default function Home() {
             .
           </h1>
           <p className="rise rise-2 mx-auto mt-3 max-w-xl text-[14px] leading-relaxed text-ink-muted md:mt-5 md:text-lg">
-            Prestige POS runs your whole counter on one iPad: selling, inventory,
-            shifts, payroll, and printed receipts in one clean, fast app.
+            Sell faster, never run out of stock, pay your team on time, and hand
+            every customer a clean printed receipt. All from one tablet, Android
+            or iPad.
           </p>
           <div className="rise rise-3 mt-5 flex flex-row flex-wrap items-center justify-center gap-2.5 md:mt-8 md:gap-3">
             <a
@@ -85,11 +86,15 @@ export default function Home() {
               Which plan fits me?
             </a>
           </div>
-          <p className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-ink-subtle md:mt-5 md:gap-x-5 md:text-xs">
-            <span className="inline-flex items-center gap-1.5"><Check size={13} className="text-brand" /> 14-day free trial</span>
-            <span className="hidden items-center gap-1.5 sm:inline-flex"><Check size={13} className="text-brand" /> iPad &amp; tablet ready</span>
-            <span className="inline-flex items-center gap-1.5"><Check size={13} className="text-brand" /> Cash, GCash &amp; QR Ph</span>
-            <span className="inline-flex items-center gap-1.5"><Check size={13} className="text-brand" /> No long contracts</span>
+          <p className="mt-4 flex items-center justify-center whitespace-nowrap text-[10px] text-ink-subtle md:mt-5 md:text-xs">
+            <Check size={12} className="mr-1.5 shrink-0 text-brand" />
+            14-day free trial
+            <span className="mx-2 text-brand-soft">·</span>
+            Android &amp; iPad
+            <span className="mx-2 text-brand-soft">·</span>
+            GCash &amp; QR Ph
+            <span className="mx-2 text-brand-soft">·</span>
+            No contracts
           </p>
         </div>
 
@@ -371,7 +376,7 @@ export default function Home() {
         </div>
 
         <p className="mx-auto mt-8 max-w-xl text-center text-sm font-medium text-ink-muted">
-          Already powering real café counters across the Philippines. ☕
+          Already powering real café counters across the Philippines.
         </p>
         <p className="mx-auto mt-3 max-w-xl text-center text-xs leading-relaxed text-ink-subtle">
           Prices are per branch, VAT inclusive. Free updates and cloud backup on
