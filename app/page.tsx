@@ -67,8 +67,7 @@ export default function Home() {
           </h1>
           <p className="rise rise-2 mx-auto mt-3 max-w-xl text-[14px] leading-relaxed text-ink-muted md:mt-5 md:text-lg">
             The POS that rings up sales in seconds, never lets you run out of
-            stock, and pays your team on time. All from one tablet, Android or
-            iPad.
+            stock, and pays your team on time. Available on iOS and Android.
           </p>
           <div className="rise rise-3 mt-5 flex flex-row flex-wrap items-center justify-center gap-2.5 md:mt-8 md:gap-3">
             <a
@@ -85,16 +84,6 @@ export default function Home() {
               Which plan fits me?
             </a>
           </div>
-          <p className="mt-4 flex items-center justify-center whitespace-nowrap text-[10px] text-ink-subtle md:mt-5 md:text-xs">
-            <Check size={12} className="mr-1.5 shrink-0 text-brand" />
-            14-day free trial
-            <span className="mx-2 text-brand-soft">·</span>
-            Android &amp; iPad
-            <span className="mx-2 text-brand-soft">·</span>
-            GCash &amp; QR Ph
-            <span className="mx-2 text-brand-soft">·</span>
-            No contracts
-          </p>
         </div>
 
         {/* product mockup with a warm glow. Phones get the FULL desktop
@@ -112,7 +101,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <p className="relative mt-4 text-center text-[11px] text-ink-subtle md:text-xs">
+          <p className="relative mx-auto mt-4 max-w-[280px] text-center text-[11px] text-ink-subtle md:max-w-none md:text-xs">
             That&apos;s the real Sell screen, exactly what your cashier sees.{" "}
             <a href="#showcase" className="font-semibold text-brand-deep underline underline-offset-2">
               See it in action
