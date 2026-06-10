@@ -57,8 +57,9 @@ export function PosMockup() {
         {/* left area — type boxes + search/customize on one row spanning the
             rail and grid, then the category rail beside the products. Mirrors
             the real Sell page layout. */}
-        <div className="bg-surface-2 md:col-span-4">
-          <div className="flex items-center justify-between gap-2 p-4 pb-3">
+        <div className="bg-surface-1 md:col-span-4">
+          {/* type row on white, separated from the grid by a hairline */}
+          <div className="flex items-center justify-between gap-2 border-b border-hairline p-4 pb-3">
             <div className="flex items-center gap-2">
               <div className="flex h-14 w-14 flex-col items-center justify-center gap-0.5 rounded-xl bg-brand text-white shadow-card">
                 <MIcon name="local_cafe" size={16} />
@@ -81,7 +82,8 @@ export function PosMockup() {
             </div>
           </div>
           <div className="flex">
-            <div className="hidden w-[88px] shrink-0 flex-col gap-2 pb-4 pl-4 md:flex">
+            {/* category rail on white, separated from the grid by a hairline */}
+            <div className="hidden w-[96px] shrink-0 flex-col gap-2 border-r border-hairline bg-surface-1 p-3 md:flex">
               <div className="flex items-center gap-1.5 rounded-lg bg-brand/90 px-2.5 py-1.5 text-white">
                 <MIcon name="grid_view" size={13} />
                 <span className="text-[10px] font-semibold">All</span>
@@ -91,7 +93,8 @@ export function PosMockup() {
                 <span className="text-[10px] font-medium">Coffee</span>
               </div>
             </div>
-            <div className="grid flex-1 grid-cols-3 gap-2.5 p-4 pt-0 sm:grid-cols-4">
+            {/* product list on a gray surface so the white cards pop */}
+            <div className="grid flex-1 grid-cols-3 gap-2.5 bg-surface-3/70 p-4 sm:grid-cols-4">
               {products.map((it) => (
                 <div
                   key={it.n}
