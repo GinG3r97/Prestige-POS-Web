@@ -174,7 +174,10 @@ export default function Home() {
       {/* Features */}
       <section id="features" className="mx-auto max-w-6xl px-5 py-20">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-semibold tracking-tight text-ink md:text-[40px]">
+          <span className="inline-flex items-center gap-2 rounded-full border border-brand-soft bg-brand-tint px-3.5 py-1.5 text-xs font-semibold text-brand-deep">
+            Everything included. No add-ons to buy.
+          </span>
+          <h2 className="mt-5 text-3xl font-semibold tracking-tight text-ink md:text-[40px]">
             Everything the counter needs
           </h2>
           <p className="mt-4 text-lg text-ink-muted">
@@ -182,17 +185,35 @@ export default function Home() {
             your customers instead of your software.
           </p>
         </div>
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {features.map(({ title, desc, icon: Icon }) => (
-            <div
-              key={title}
-              className="group rounded-xl2 border border-hairline bg-surface-1 p-6 shadow-card transition hover:-translate-y-1 hover:border-brand-soft"
-            >
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-brand-tint text-brand-deep transition group-hover:bg-brand group-hover:text-white">
-                <Icon size={21} strokeWidth={1.9} />
+        <div className="mt-12 space-y-10">
+          {[
+            { label: "Sell faster", items: [0, 10, 5] },
+            { label: "Every sale covered", items: [1, 2, 9] },
+            { label: "Run the back office", items: [3, 4, 7] },
+            { label: "Stay in control", items: [6, 8, 11] },
+          ].map((group) => (
+            <div key={group.label}>
+              <div className="mb-4 flex items-center gap-3">
+                <p className="text-xs font-bold uppercase tracking-widest text-brand-deep">{group.label}</p>
+                <span className="h-px flex-1 bg-hairline" />
               </div>
-              <h3 className="mt-4 text-base font-semibold text-ink">{title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-ink-muted">{desc}</p>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {group.items.map((idx) => {
+                  const { title, desc, icon: Icon } = features[idx];
+                  return (
+                    <div
+                      key={title}
+                      className="group rounded-xl2 border border-hairline bg-surface-1 p-6 shadow-card transition hover:-translate-y-1 hover:border-brand-soft"
+                    >
+                      <div className="grid h-11 w-11 place-items-center rounded-xl bg-brand-tint text-brand-deep transition group-hover:bg-brand group-hover:text-white">
+                        <Icon size={21} strokeWidth={1.9} />
+                      </div>
+                      <h3 className="mt-4 text-base font-semibold text-ink">{title}</h3>
+                      <p className="mt-2 text-sm leading-relaxed text-ink-muted">{desc}</p>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           ))}
         </div>

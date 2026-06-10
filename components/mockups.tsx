@@ -98,7 +98,7 @@ export function InventoryMockup() {
     <Window title="Inventory" sub="Auto-deducts on each sale">
       <div className="flex">
         {/* left rail — filters + categories, like the app */}
-        <div className="hidden w-[108px] shrink-0 flex-col gap-1.5 border-r border-hairline p-2.5 sm:flex">
+        <div className="hidden w-[118px] shrink-0 flex-col gap-1.5 border-r border-hairline p-2.5 sm:flex">
           {[
             { i: "inventory_2", l: "All items", n: "24", on: true },
             { i: "warning", l: "Low stock", n: "3", c: "text-amber-600" },
@@ -110,7 +110,7 @@ export function InventoryMockup() {
             </span>
           ))}
           <p className="mt-1 px-1 text-[7px] font-bold tracking-widest text-ink-subtle">CATEGORIES</p>
-          <span className="flex items-center gap-1 rounded-lg border border-hairline px-2 py-1.5 text-[9px] font-medium text-ink-muted">
+          <span className="flex items-center gap-1 whitespace-nowrap rounded-lg border border-hairline px-2 py-1.5 text-[9px] font-medium text-ink-muted">
             <MIcon name="coffee" size={11} /> Coffee &amp; Tea
           </span>
           <span className="flex items-center gap-1 rounded-lg border border-hairline px-2 py-1.5 text-[9px] font-medium text-ink-muted">
@@ -214,13 +214,13 @@ export function PayrollMockup() {
 /* 4 — Employees (Icons.search, Icons.person, Icons.add) */
 export function EmployeesMockup() {
   const list = [
-    { n: "Maria Gonzalez", role: "Manager", badge: "" },
+    { n: "Maria Gonzalez", role: "Manager", sel: true, badge: "" },
     { n: "John Smith", role: "Cashier", badge: "" },
-    { n: "Sarah Johnson", role: "Inventory Manager", badge: "LEAVE" },
+    { n: "Sarah Johnson", role: "Inventory", badge: "LEAVE" },
     { n: "Carlos Mendez", role: "Cashier", badge: "" },
   ];
   return (
-    <Window title="Employees" sub="4 active · 1 inactive">
+    <Window title="Staff" sub="4 active · 1 on leave">
       {/* header row — role dropdown + square search + Add, like the app */}
       <div className="flex items-center gap-2 px-4 pt-3">
         <span className="flex items-center gap-1 rounded-lg border border-hairline bg-surface-1 px-2.5 py-2 text-[10px] font-medium text-ink">
@@ -233,23 +233,63 @@ export function EmployeesMockup() {
           <MIcon name="add" size={13} /> Add
         </span>
       </div>
-      {/* bordered staff cards — name | role on one line, status at right */}
-      <div className="space-y-2 px-4 pb-4 pt-3">
-        {list.map((e) => (
-          <div key={e.n} className="flex items-center gap-2.5 rounded-xl border border-hairline bg-surface-1 px-3 py-2.5">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-tint text-brand-deep">
-              <MIcon name="person" size={20} />
-            </span>
-            <div className="flex min-w-0 flex-1 items-baseline gap-1.5">
-              <p className="truncate text-[11px] font-semibold text-ink">{e.n}</p>
-              <span className="text-[9px] text-ink-subtle">|</span>
-              <p className="truncate text-[9px] font-medium text-brand-deep">{e.role}</p>
+      {/* two-pane like the app — staff list left, detail panel right */}
+      <div className="flex gap-3 px-4 pb-4 pt-3">
+        <div className="w-[42%] shrink-0 space-y-2">
+          {list.map((e) => (
+            <div key={e.n} className={`flex items-center gap-2 rounded-xl border px-2.5 py-2 ${e.sel ? "border-brand bg-brand-tint/50" : "border-hairline bg-surface-1"}`}>
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-brand-tint text-brand-deep">
+                <MIcon name="person" size={15} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[10px] font-semibold text-ink">{e.n}</p>
+                <p className="truncate text-[8px] font-medium text-brand-deep">{e.role}</p>
+              </div>
+              {e.badge
+                ? <span className="rounded bg-blue-50 px-1 py-0.5 text-[7px] font-bold text-blue-600">{e.badge}</span>
+                : <span className="h-1.5 w-1.5 rounded-full bg-green-500" />}
             </div>
-            {e.badge
-              ? <span className="rounded bg-blue-50 px-1.5 py-0.5 text-[8px] font-bold text-blue-600">{e.badge}</span>
-              : <span className="flex items-center gap-1 text-[8px] font-semibold text-green-600"><span className="h-1.5 w-1.5 rounded-full bg-green-500" /> Active</span>}
+          ))}
+        </div>
+        {/* detail — compact header, Profile | Salary, Access with owner-visible PIN */}
+        <div className="min-w-0 flex-1 rounded-xl border border-hairline bg-surface-1 p-3">
+          <div className="flex items-center gap-2">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-tint text-brand-deep">
+              <MIcon name="person" size={17} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-baseline gap-1.5">
+                <p className="truncate text-[11px] font-semibold text-ink">Maria Gonzalez</p>
+                <span className="text-[8px] text-ink-subtle">|</span>
+                <p className="truncate text-[9px] font-medium text-brand-deep">Manager</p>
+              </div>
+              <span className="flex items-center gap-1 text-[8px] font-semibold text-green-600">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-500" /> Active · Full-time
+              </span>
+            </div>
+            <span className="rounded-full bg-brand px-2.5 py-1 text-[8px] font-semibold text-white">Update</span>
+            <span className="text-[8px] font-semibold text-red-500">Remove</span>
           </div>
-        ))}
+          <div className="mt-2.5 grid grid-cols-2 gap-2">
+            <div className="rounded-lg border border-hairline p-2">
+              <p className="text-[7px] font-bold tracking-widest text-ink-subtle">PROFILE</p>
+              <p className="mt-1 flex items-center gap-1 text-[9px] text-ink"><MIcon name="call" size={10} className="text-brand-deep" /> 0917 555 0142</p>
+              <p className="mt-0.5 flex items-center gap-1 truncate text-[9px] text-ink"><MIcon name="mail" size={10} className="text-brand-deep" /> maria@aurora.ph</p>
+            </div>
+            <div className="rounded-lg border border-hairline p-2">
+              <p className="text-[7px] font-bold tracking-widest text-ink-subtle">SALARY</p>
+              <p className="mt-1 flex items-center gap-1 text-[9px] text-ink"><MIcon name="payments" size={10} className="text-brand-deep" /> ₱500 / day</p>
+              <p className="mt-0.5 flex items-center gap-1 text-[9px] text-ink"><MIcon name="event_available" size={10} className="text-brand-deep" /> Mon – Sat</p>
+            </div>
+          </div>
+          <div className="mt-2 flex items-center justify-between rounded-lg border border-hairline p-2">
+            <p className="text-[7px] font-bold tracking-widest text-ink-subtle">ACCESS</p>
+            <p className="flex items-center gap-1 text-[9px] font-semibold text-ink">
+              <MIcon name="key" size={10} className="text-brand-deep" /> Cashier PIN
+              <span className="rounded bg-brand-tint px-1.5 py-0.5 font-mono text-[9px] font-bold text-brand-deep">4821</span>
+            </p>
+          </div>
+        </div>
       </div>
     </Window>
   );
