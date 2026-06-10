@@ -58,7 +58,7 @@ export default function Home() {
             </span>
             Made for Philippine cafés &amp; retail ☕
           </span>
-          <h1 className="mx-auto mt-6 max-w-3xl text-[34px] font-semibold leading-[1.08] tracking-tight text-ink sm:text-[40px] md:text-[64px] md:leading-[1.05]">
+          <h1 className="mx-auto mt-4 max-w-3xl text-[30px] font-semibold leading-[1.1] tracking-tight text-ink sm:text-[40px] md:mt-6 md:text-[64px] md:leading-[1.05]">
             The point-of-sale your
             <br className="hidden md:block" /> café{" "}
             <span className="bg-gradient-to-r from-brand-deep via-brand to-brand-deep bg-clip-text text-transparent">
@@ -66,38 +66,47 @@ export default function Home() {
             </span>
             .
           </h1>
-          <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-ink-muted md:text-lg">
+          <p className="mx-auto mt-3 max-w-xl text-[14px] leading-relaxed text-ink-muted md:mt-5 md:text-lg">
             Prestige POS runs your whole counter on one iPad: selling, inventory,
             shifts, payroll, and printed receipts in one clean, fast app.
           </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <div className="mt-5 flex flex-row flex-wrap items-center justify-center gap-2.5 md:mt-8 md:gap-3">
             <a
               href="#pricing"
-              className="group inline-flex items-center gap-2 rounded-full bg-brand px-7 py-3.5 text-sm font-semibold text-white shadow-[0_10px_30px_-10px_rgba(142,110,73,0.6)] transition hover:bg-brand-deep"
+              className="group inline-flex items-center gap-1.5 rounded-full bg-brand px-5 py-3 text-[13px] font-semibold text-white shadow-[0_10px_30px_-10px_rgba(142,110,73,0.6)] transition hover:bg-brand-deep md:px-7 md:py-3.5 md:text-sm"
             >
               Start free trial
-              <ArrowRight size={16} className="transition group-hover:translate-x-0.5" />
+              <ArrowRight size={15} className="transition group-hover:translate-x-0.5" />
             </a>
             <a
               href="#fit"
-              className="rounded-full border border-hairline bg-surface-1 px-7 py-3.5 text-sm font-semibold text-ink transition hover:bg-surface-3"
+              className="rounded-full border border-hairline bg-surface-1 px-5 py-3 text-[13px] font-semibold text-ink transition hover:bg-surface-3 md:px-7 md:py-3.5 md:text-sm"
             >
               Which plan fits me?
             </a>
           </div>
-          <p className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-xs text-ink-subtle">
+          <p className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-ink-subtle md:mt-5 md:gap-x-5 md:text-xs">
             <span className="inline-flex items-center gap-1.5"><Check size={13} className="text-brand" /> 14-day free trial</span>
-            <span className="inline-flex items-center gap-1.5"><Check size={13} className="text-brand" /> iPad &amp; tablet ready</span>
+            <span className="hidden items-center gap-1.5 sm:inline-flex"><Check size={13} className="text-brand" /> iPad &amp; tablet ready</span>
             <span className="inline-flex items-center gap-1.5"><Check size={13} className="text-brand" /> Cash, GCash &amp; QR Ph</span>
             <span className="inline-flex items-center gap-1.5"><Check size={13} className="text-brand" /> No long contracts</span>
           </p>
         </div>
 
-        {/* product mockup with a warm glow */}
-        <div className="relative mx-auto mt-12 max-w-4xl px-5 pb-20">
+        {/* product mockup with a warm glow. Phones get the FULL desktop
+            two-pane layout rendered at 760px and scaled down whole, so the
+            hero shows the real composition without the height cost. */}
+        <div className="relative mx-auto mt-8 max-w-4xl px-5 pb-12 md:mt-12 md:pb-20">
           <div className="pointer-events-none absolute inset-x-10 top-6 -z-0 h-3/4 rounded-full bg-brand/25 blur-3xl" />
-          <div className="relative">
+          <div className="relative hidden sm:block">
             <PosMockup />
+          </div>
+          <div className="relative sm:hidden">
+            <div className="h-[215px] overflow-hidden">
+              <div className="w-[760px] origin-top-left scale-[0.46]">
+                <PosMockup full />
+              </div>
+            </div>
           </div>
         </div>
       </section>

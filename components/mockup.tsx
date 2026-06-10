@@ -24,7 +24,9 @@ const cart = [
 
 const peso = (n: number) => "₱" + n.toLocaleString("en-PH");
 
-export function PosMockup() {
+/// [full] forces the desktop two-pane layout regardless of viewport — used on
+/// phones where the hero renders this at 760px and scales it down whole.
+export function PosMockup({ full = false }: { full?: boolean }) {
   const subtotal = cart.reduce((a, c) => a + c.q * c.p, 0);
   const vat = Math.round((subtotal / 1.12) * 0.12);
   return (
@@ -38,7 +40,7 @@ export function PosMockup() {
             <p className="text-[10px] text-ink-subtle">Thursday · 2:14 PM</p>
           </div>
         </div>
-        <div className="hidden items-center gap-1.5 rounded-full border border-brand-soft bg-brand-tint px-3 py-1 text-[10px] font-medium text-brand-deep sm:flex">
+        <div className={`${full ? "flex" : "hidden sm:flex"} items-center gap-1.5 rounded-full border border-brand-soft bg-brand-tint px-3 py-1 text-[10px] font-medium text-brand-deep`}>
           <span>Float ₱2,000</span>
           <span className="text-brand-soft">·</span>
           <span>Sales ₱8,450</span>
@@ -53,11 +55,11 @@ export function PosMockup() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-6">
+      <div className={`grid ${full ? "grid-cols-6" : "grid-cols-1 md:grid-cols-6"}`}>
         {/* left area — type boxes + search/customize on one row spanning the
             rail and grid, then the category rail beside the products. Mirrors
             the real Sell page layout. */}
-        <div className="bg-surface-1 md:col-span-4">
+        <div className={`bg-surface-1 ${full ? "col-span-4" : "md:col-span-4"}`}>
           {/* type row on white, separated from the grid by a hairline */}
           <div className="flex items-center justify-between gap-2 border-b border-hairline p-4 pb-3">
             <div className="flex items-center gap-2">
@@ -83,7 +85,7 @@ export function PosMockup() {
           </div>
           <div className="flex">
             {/* category rail on white, separated from the grid by a hairline */}
-            <div className="hidden w-[96px] shrink-0 flex-col gap-2 border-r border-hairline bg-surface-1 p-3 md:flex">
+            <div className={`${full ? "flex" : "hidden md:flex"} w-[96px] shrink-0 flex-col gap-2 border-r border-hairline bg-surface-1 p-3`}>
               <div className="flex items-center gap-1.5 rounded-lg bg-brand/90 px-2.5 py-1.5 text-white">
                 <MIcon name="grid_view" size={13} />
                 <span className="text-[10px] font-semibold">All</span>
@@ -94,11 +96,11 @@ export function PosMockup() {
               </div>
             </div>
             {/* product list on a gray surface so the white cards pop */}
-            <div className="grid flex-1 grid-cols-3 gap-3 bg-surface-3 p-4 sm:grid-cols-4">
+            <div className={`grid flex-1 gap-3 bg-surface-3 p-4 ${full ? "grid-cols-4" : "grid-cols-3 sm:grid-cols-4"}`}>
               {products.map((it, i) => (
                 <div
                   key={it.n}
-                  className={`${i >= 6 ? "hidden sm:flex" : "flex"} flex-col rounded-xl bg-surface-1 p-2.5 shadow-[0_1px_3px_rgba(0,0,0,0.06)]`}
+                  className={`${full ? "flex" : i >= 6 ? "hidden sm:flex" : "flex"} flex-col rounded-xl bg-surface-1 p-2.5 shadow-[0_1px_3px_rgba(0,0,0,0.06)]`}
                 >
                   <div className="grid h-8 w-8 place-items-center rounded-lg bg-brand-tint text-brand-deep">
                     <MIcon name={it.i} size={17} />
@@ -119,7 +121,7 @@ export function PosMockup() {
 
         {/* order panel — mirrors the app's Current Order pane (desktop/tablet
             only; on phones the grid alone keeps the hero short) */}
-        <div className="hidden flex-col border-t border-hairline bg-surface-1 p-4 md:col-span-2 md:flex md:border-l md:border-t-0">
+        <div className={`flex-col bg-surface-1 p-4 ${full ? "col-span-2 flex border-l border-hairline" : "hidden border-t border-hairline md:col-span-2 md:flex md:border-l md:border-t-0"}`}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[12px] font-semibold text-ink">Current Order</p>
