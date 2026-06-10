@@ -118,20 +118,20 @@ export default function Home() {
 
       {/* Compliance band */}
       <section id="philippines" className="border-y border-hairline bg-surface-1">
-        <div className="mx-auto grid max-w-6xl gap-5 px-5 py-12 sm:grid-cols-3">
+        <div className="mx-auto grid max-w-6xl gap-2.5 px-5 py-8 sm:grid-cols-3 sm:gap-5 sm:py-12">
           {[
             { k: "Made for PH stores", v: "Peso-first pricing, VAT breakdown, and the way counters here actually run." },
             { k: "Senior / PWD", v: "Correct 20% discount with VAT exemption, logged automatically." },
             { k: "GCash & QR Ph", v: "Take the payments your customers already use, with references." },
           ].map((x) => (
-            <div key={x.k} className="rounded-xl2 border border-hairline bg-surface-2 p-6">
-              <div className="flex items-center gap-2">
-                <span className="grid h-7 w-7 place-items-center rounded-lg bg-brand text-white">
-                  <Check size={15} />
-                </span>
+            <div key={x.k} className="flex items-start gap-3 rounded-xl2 border border-hairline bg-surface-2 p-4 sm:p-6">
+              <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-brand text-white">
+                <Check size={15} />
+              </span>
+              <div>
                 <p className="text-sm font-semibold text-brand-deep">{x.k}</p>
+                <p className="mt-1 text-[13px] leading-relaxed text-ink-muted sm:text-sm">{x.v}</p>
               </div>
-              <p className="mt-2.5 text-sm leading-relaxed text-ink-muted">{x.v}</p>
             </div>
           ))}
         </div>
@@ -181,13 +181,15 @@ export default function Home() {
             className={`flex flex-col items-center gap-8 md:gap-14 ${i % 2 === 1 ? "md:flex-row-reverse" : "md:flex-row"}`}
           >
             <div className="flex-1">
-              <span className="text-xs font-semibold uppercase tracking-wide text-brand-deep">{row.tag}</span>
-              <h3 className="mt-2 text-2xl font-semibold tracking-tight text-ink md:text-3xl">{row.title}</h3>
-              <p className="mt-3 text-[15px] leading-relaxed text-ink-muted">{row.body}</p>
-              <ul className="mt-5 space-y-2.5">
+              <span className="inline-flex rounded-full bg-brand-tint px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-brand-deep">
+                {row.tag}
+              </span>
+              <h3 className="mt-2.5 text-[22px] font-semibold leading-snug tracking-tight text-ink md:text-3xl">{row.title}</h3>
+              <p className="mt-2.5 text-sm leading-relaxed text-ink-muted md:mt-3 md:text-[15px]">{row.body}</p>
+              <ul className="mt-4 space-y-2 md:mt-5 md:space-y-2.5">
                 {row.points.map((pt) => (
-                  <li key={pt} className="flex items-center gap-2.5 text-sm text-ink">
-                    <Check size={16} className="shrink-0 text-brand" />
+                  <li key={pt} className="flex items-center gap-2.5 text-[13px] text-ink md:text-sm">
+                    <Check size={15} className="shrink-0 text-brand" />
                     {pt}
                   </li>
                 ))}
