@@ -54,21 +54,11 @@ export function PosMockup() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-6">
-        {/* left rail — categories, like the app's Sell page */}
-        <div className="hidden flex-col gap-2 border-r border-hairline bg-surface-1 p-3 md:flex">
-          <div className="flex items-center gap-1.5 rounded-lg bg-brand/90 px-2.5 py-1.5 text-white">
-            <MIcon name="grid_view" size={13} />
-            <span className="text-[10px] font-semibold">All</span>
-          </div>
-          <div className="flex items-center gap-1.5 rounded-lg border border-hairline px-2.5 py-1.5 text-ink-muted">
-            <MIcon name="coffee" size={13} />
-            <span className="text-[10px] font-medium">Coffee</span>
-          </div>
-        </div>
-
-        {/* type boxes + search/customize — one row above the grid, like the app */}
-        <div className="bg-surface-2 p-4 md:col-span-3">
-          <div className="mb-3 flex items-center justify-between gap-2">
+        {/* left area — type boxes + search/customize on one row spanning the
+            rail and grid, then the category rail beside the products. Mirrors
+            the real Sell page layout. */}
+        <div className="bg-surface-2 md:col-span-4">
+          <div className="flex items-center justify-between gap-2 p-4 pb-3">
             <div className="flex items-center gap-2">
               <div className="flex h-14 w-14 flex-col items-center justify-center gap-0.5 rounded-xl bg-brand text-white shadow-card">
                 <MIcon name="local_cafe" size={16} />
@@ -90,25 +80,37 @@ export function PosMockup() {
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 md:grid-cols-3">
-            {products.map((it) => (
-              <div
-                key={it.n}
-                className="flex flex-col rounded-xl border border-hairline bg-surface-1 p-2.5"
-              >
-                <div className="grid h-8 w-8 place-items-center rounded-lg bg-brand-tint text-brand-deep">
-                  <MIcon name={it.i} size={17} />
-                </div>
-                <p className="mt-2 truncate text-[11px] font-medium text-ink">{it.n}</p>
-                {it.custom ? (
-                  <p className="flex items-center gap-1 text-[10px] font-semibold text-brand-deep">
-                    Custom price <MIcon name="edit" size={10} />
-                  </p>
-                ) : (
-                  <p className="text-[11px] font-semibold text-brand-deep">{peso(it.p)}</p>
-                )}
+          <div className="flex">
+            <div className="hidden w-[88px] shrink-0 flex-col gap-2 pb-4 pl-4 md:flex">
+              <div className="flex items-center gap-1.5 rounded-lg bg-brand/90 px-2.5 py-1.5 text-white">
+                <MIcon name="grid_view" size={13} />
+                <span className="text-[10px] font-semibold">All</span>
               </div>
-            ))}
+              <div className="flex items-center gap-1.5 rounded-lg border border-hairline bg-surface-1 px-2.5 py-1.5 text-ink-muted">
+                <MIcon name="coffee" size={13} />
+                <span className="text-[10px] font-medium">Coffee</span>
+              </div>
+            </div>
+            <div className="grid flex-1 grid-cols-3 gap-2.5 p-4 pt-0 sm:grid-cols-4">
+              {products.map((it) => (
+                <div
+                  key={it.n}
+                  className="flex flex-col rounded-xl border border-hairline bg-surface-1 p-2.5"
+                >
+                  <div className="grid h-8 w-8 place-items-center rounded-lg bg-brand-tint text-brand-deep">
+                    <MIcon name={it.i} size={17} />
+                  </div>
+                  <p className="mt-2 truncate text-[11px] font-medium text-ink">{it.n}</p>
+                  {it.custom ? (
+                    <p className="flex items-center gap-1 text-[10px] font-semibold text-brand-deep">
+                      Custom price <MIcon name="edit" size={10} />
+                    </p>
+                  ) : (
+                    <p className="text-[11px] font-semibold text-brand-deep">{peso(it.p)}</p>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
