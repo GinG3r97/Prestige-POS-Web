@@ -159,35 +159,48 @@ export function InventoryMockup() {
 /* 3 — Payroll run (Icons.person avatars, Icons.payments) */
 export function PayrollMockup() {
   const slips = [
-    { n: "Maria Gonzalez", role: "Manager", detail: "40h × ₱500/day", net: 20000 },
-    { n: "John Smith", role: "Cashier", detail: "39.5h × ₱180/hr", net: 7110 },
-    { n: "Sarah Johnson", role: "Inventory", detail: "Salaried · ₱25,000/mo", net: 25000 },
+    { n: "Maria Gonzalez", role: "Manager", detail: "40h × ₱500/day", chip: "+₱1,000 bonus", chipC: "bg-green-50 text-green-700", net: 20000 },
+    { n: "John Smith", role: "Cashier", detail: "39.5h × ₱180/hr", chip: "−₱150 late", chipC: "bg-red-50 text-red-600", net: 7110 },
+    { n: "Sarah Johnson", role: "Inventory", detail: "Salaried · ₱25,000/mo", chip: "", chipC: "", net: 25000 },
   ];
   const net = slips.reduce((a, s) => a + s.net, 0);
   return (
     <Window title="Pay run · Jun 2 – Jun 8" sub="Weekly · 3 employees">
-      <div className="px-4 py-2">
+      {/* status + action, like the app's pay-run header */}
+      <div className="flex items-center justify-between px-4 pt-3">
         <span className="rounded-md bg-brand-tint px-2 py-0.5 text-[9px] font-bold text-brand-deep">DRAFT</span>
+        <span className="flex items-center gap-1 rounded-full bg-brand px-3 py-1.5 text-[9px] font-semibold text-white shadow-card">
+          <MIcon name="check" size={11} /> Mark as paid
+        </span>
       </div>
-      <div className="divide-y divide-hairline px-4">
+      {/* payslip cards — name | role inline, bonus/deduction chips */}
+      <div className="space-y-2 px-4 pb-1 pt-2.5">
         {slips.map((s) => (
-          <div key={s.n} className="flex items-center justify-between py-2.5">
-            <div className="flex items-center gap-2.5">
-              <span className="grid h-8 w-8 place-items-center rounded-full bg-brand-tint text-brand-deep">
-                <MIcon name="person" size={18} />
-              </span>
-              <div>
-                <p className="text-[11px] font-semibold text-ink">{s.n}</p>
-                <p className="text-[9px] text-ink-subtle">{s.role} · {s.detail}</p>
+          <div key={s.n} className="flex items-center gap-2.5 rounded-xl border border-hairline bg-surface-1 px-3 py-2.5">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-tint text-brand-deep">
+              <MIcon name="person" size={18} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-baseline gap-1.5">
+                <p className="truncate text-[11px] font-semibold text-ink">{s.n}</p>
+                <span className="text-[9px] text-ink-subtle">|</span>
+                <p className="truncate text-[9px] font-medium text-brand-deep">{s.role}</p>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <p className="text-[9px] text-ink-subtle">{s.detail}</p>
+                {s.chip && <span className={`rounded px-1 py-px text-[8px] font-bold ${s.chipC}`}>{s.chip}</span>}
               </div>
             </div>
-            <p className="text-[12px] font-bold text-brand-deep">{peso(s.net)}</p>
+            <div className="text-right">
+              <p className="text-[8px] font-semibold tracking-wide text-ink-subtle">NET</p>
+              <p className="text-[12px] font-bold text-brand-deep">{peso(s.net)}</p>
+            </div>
           </div>
         ))}
       </div>
-      <div className="m-4 rounded-xl bg-brand-deep px-4 py-3 text-white">
+      <div className="m-4 mt-3 rounded-xl bg-brand-deep px-4 py-3 text-white">
         <div className="flex items-center justify-between text-[10px] text-brand-soft">
-          <span>Gross</span><span>{peso(net)}</span>
+          <span>Gross · 3 payslips</span><span>{peso(net)}</span>
         </div>
         <div className="mt-0.5 flex items-center justify-between">
           <span className="text-[10px] font-semibold tracking-wide text-brand-soft">NET PAYABLE</span>

@@ -94,11 +94,11 @@ export function PosMockup() {
               </div>
             </div>
             {/* product list on a gray surface so the white cards pop */}
-            <div className="grid flex-1 grid-cols-3 gap-2.5 bg-surface-3 p-4 sm:grid-cols-4">
+            <div className="grid flex-1 grid-cols-3 gap-3 bg-surface-3 p-4 sm:grid-cols-4">
               {products.map((it) => (
                 <div
                   key={it.n}
-                  className="flex flex-col rounded-xl border border-hairline bg-surface-1 p-2.5"
+                  className="flex flex-col rounded-xl bg-surface-1 p-2.5 shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
                 >
                   <div className="grid h-8 w-8 place-items-center rounded-lg bg-brand-tint text-brand-deep">
                     <MIcon name={it.i} size={17} />
