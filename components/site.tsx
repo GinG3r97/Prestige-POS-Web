@@ -67,6 +67,7 @@ export function Footer() {
               <ul className="mt-3 space-y-2 text-ink-muted">
                 <li><a href="/#features" className="hover:text-ink">Features</a></li>
                 <li><a href="/#pricing" className="hover:text-ink">Pricing</a></li>
+                <li><a href="/#faq" className="hover:text-ink">FAQ</a></li>
                 <li><a href="/#philippines" className="hover:text-ink">Built for PH</a></li>
               </ul>
             </div>

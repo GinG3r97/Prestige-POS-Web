@@ -198,6 +198,12 @@ export default function Home() {
             <div className={`w-full flex-1 ${i >= 2 ? "hidden md:block" : ""}`}>{row.mockup}</div>
           </div>
         ))}
+        <p className="text-center text-[15px] text-ink-muted">
+          And that&apos;s just the start.{" "}
+          <a href="#features" className="font-semibold text-brand-deep underline underline-offset-2">
+            See everything included
+          </a>
+        </p>
       </section>
 
       {/* Features */}
@@ -347,6 +353,9 @@ export default function Home() {
             <span className="mt-2.5 inline-flex w-fit items-center rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700">
               Yearly ₱14,990 · save ₱2,998
             </span>
+            <p className="mt-2 text-[12px] font-medium text-brand-deep">
+              Most stores earn this back before lunch.
+            </p>
             <p className="mt-4 text-[13px] font-semibold text-ink">
               Everything in Basic, plus everything unlocked:
             </p>
@@ -393,23 +402,100 @@ export default function Home() {
         </p>
       </section>
 
+      {/* FAQ — answer the doubts right after they see the price */}
+      <section id="faq" className="border-t border-hairline bg-surface-1 px-5 py-14 md:py-20">
+        <div className="mx-auto max-w-2xl">
+          <div className="text-center">
+            <h2 className="text-3xl font-semibold tracking-tight text-ink md:text-[40px]">
+              Questions? We got you.
+            </h2>
+            <p className="mt-3 text-[15px] text-ink-muted md:text-lg">
+              The things store owners ask us before they start.
+            </p>
+          </div>
+          <div className="mt-10 space-y-3">
+            {[
+              {
+                q: "What do I need to run Prestige POS?",
+                a: "Any Android tablet or iPad and an internet connection. Add a Bluetooth thermal printer if you want printed receipts, we'll help you pair it.",
+              },
+              {
+                q: "How does the free trial work?",
+                a: "You get the full Pro experience for 14 days, no card needed. When the trial ends, pick Basic or Pro and keep selling. Nothing is charged automatically.",
+              },
+              {
+                q: "How do I pay for my subscription?",
+                a: "On our website, with GCash, card, or bank transfer. The app itself is login-only, so your staff never see billing.",
+              },
+              {
+                q: "Can I cancel anytime?",
+                a: "Yes. Your service runs to the end of what you paid for, and your data stays yours. You can export it anytime.",
+              },
+              {
+                q: "What if my internet is slow?",
+                a: "Prestige is light on data, a phone hotspot is enough to keep the counter running.",
+              },
+              {
+                q: "Do you help with setup?",
+                a: "Yes. We help you load your menu, connect your printer, and train your cashier. Most stores are selling the same day.",
+              },
+            ].map((f) => (
+              <details
+                key={f.q}
+                className="group rounded-xl2 border border-hairline bg-surface-2 px-5 py-4 transition hover:border-brand-soft"
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[15px] font-semibold text-ink">
+                  {f.q}
+                  <span className="shrink-0 text-lg font-medium text-brand-deep transition group-open:rotate-45">
+                    +
+                  </span>
+                </summary>
+                <p className="mt-3 text-sm leading-relaxed text-ink-muted">{f.a}</p>
+              </details>
+            ))}
+          </div>
+          <p className="mt-8 text-center text-sm text-ink-muted">
+            Something else on your mind?{" "}
+            <a
+              href="mailto:hello@prestigeitsolutions.tech"
+              className="font-semibold text-brand-deep underline underline-offset-2"
+            >
+              Email us
+            </a>{" "}
+            and a real person will reply.
+          </p>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="px-5 pb-20">
         <div className="relative mx-auto max-w-5xl overflow-hidden rounded-[2rem] bg-brand-deep px-6 py-12 text-center text-white md:px-8 md:py-16">
           <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
           <div className="pointer-events-none absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-brand/30 blur-2xl" />
           <h2 className="relative mx-auto max-w-2xl text-3xl font-semibold tracking-tight md:text-[40px]">
-            Ready to run your store on Prestige POS?
+            Set up tonight. Sell in the morning.
           </h2>
           <p className="relative mx-auto mt-4 max-w-xl text-brand-soft">
-            Try Pro free for 14 days. Most cafés are selling on day one.
+            Your menu loaded, your printer paired, your cashier ready. Most
+            stores ring up their first sale on day one.
           </p>
-          <a
-            href="#pricing"
-            className="relative mt-8 inline-block rounded-full bg-white px-8 py-3.5 text-sm font-semibold text-brand-deep transition hover:bg-brand-tint"
-          >
-            See plans &amp; start free
-          </a>
+          <div className="relative mt-8 flex flex-wrap items-center justify-center gap-3">
+            <a
+              href="#pricing"
+              className="inline-block rounded-full bg-white px-8 py-3.5 text-sm font-semibold text-brand-deep transition hover:bg-brand-tint"
+            >
+              Start free trial
+            </a>
+            <a
+              href="mailto:hello@prestigeitsolutions.tech?subject=Prestige%20POS%3A%20Question"
+              className="inline-block rounded-full border border-white/40 px-8 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10"
+            >
+              Talk to us first
+            </a>
+          </div>
+          <p className="relative mt-4 text-xs text-brand-soft">
+            Free for 14 days. No card needed. Cancel anytime.
+          </p>
         </div>
       </section>
 
