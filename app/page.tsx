@@ -210,12 +210,20 @@ export default function Home() {
       <section id="features" className="mx-auto max-w-6xl px-5 py-14 md:py-20">
         <div className="mx-auto max-w-2xl text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-brand-soft bg-brand-tint px-3.5 py-1.5 text-xs font-semibold text-brand-deep">
-            No add-ons to buy
+            Built for modern Philippine businesses
           </span>
-          <h2 className="mt-5 text-3xl font-semibold tracking-tight text-ink md:text-[40px]">
-            Everything the counter needs
+          <h2 className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-ink md:text-[40px]">
+            Everything your business needs.
+            <br />
+            <span className="bg-gradient-to-r from-brand-deep via-brand to-brand-deep bg-clip-text text-transparent">
+              In one powerful POS.
+            </span>
           </h2>
-          <p className="mt-4 text-lg text-ink-muted">One app. The whole store.</p>
+          <p className="mx-auto mt-4 max-w-xl text-[15px] leading-relaxed text-ink-muted md:text-lg">
+            Sales, inventory, staff, and analytics in one beautifully simple
+            app. Run it from anywhere. See it in real time. Decide with
+            confidence.
+          </p>
         </div>
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
@@ -245,6 +253,13 @@ export default function Home() {
             </div>
           ))}
         </div>
+        <p className="mt-10 text-center text-sm text-ink-muted">
+          Everything included, no add-ons to buy.{" "}
+          <span className="font-semibold text-brand-deep">
+            Designed for Android and iPad. Built to help Philippine businesses
+            grow.
+          </span>
+        </p>
       </section>
 
       {/* Plan finder — meet them where they are */}
