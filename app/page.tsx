@@ -175,15 +175,12 @@ export default function Home() {
       <section id="features" className="mx-auto max-w-6xl px-5 py-20">
         <div className="mx-auto max-w-2xl text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-brand-soft bg-brand-tint px-3.5 py-1.5 text-xs font-semibold text-brand-deep">
-            Everything included. No add-ons to buy.
+            No add-ons to buy
           </span>
           <h2 className="mt-5 text-3xl font-semibold tracking-tight text-ink md:text-[40px]">
             Everything the counter needs
           </h2>
-          <p className="mt-4 text-lg text-ink-muted">
-            One app for selling, stock, staff, and the books, so you can focus on
-            your customers instead of your software.
-          </p>
+          <p className="mt-4 text-lg text-ink-muted">One app. The whole store.</p>
         </div>
         <div className="mt-12 space-y-10">
           {[
