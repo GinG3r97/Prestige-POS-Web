@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Material Symbols glyph base style */
+.mso {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-surface-2 text-ink antialiased;
+}
+
+/* Subtle warm gradient used behind the hero. */
+.hero-glow {
+  background:
+    radial-gradient(60% 50% at 50% 0%, rgba(183, 151, 110, 0.18) 0%, rgba(183, 151, 110, 0) 70%),
+    linear-gradient(180deg, #f7efe4 0%, #fafafa 100%);
+}
+
+/* Long-form legal pages */
+.prose-legal h2 {
+  @apply text-xl font-semibold text-ink mt-10 mb-3;
+}
+.prose-legal p {
+  @apply text-ink-muted leading-relaxed mb-4;
+}
+.prose-legal ul {
+  @apply list-disc pl-5 text-ink-muted leading-relaxed mb-4 space-y-2;
+}
+.prose-legal a {
+  @apply text-brand-deep underline underline-offset-2;
+}
