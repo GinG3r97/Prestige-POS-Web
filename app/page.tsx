@@ -49,8 +49,11 @@ export default function Home() {
       <Header />
 
       {/* Hero */}
-      <section className="hero-glow overflow-hidden">
-        <div className="mx-auto max-w-6xl px-5 pb-4 pt-16 text-center md:pt-24">
+      <section className="hero-glow relative overflow-hidden">
+        {/* soft depth blobs */}
+        <div className="pointer-events-none absolute -left-20 top-24 h-56 w-56 rounded-full bg-brand/15 blur-3xl" />
+        <div className="pointer-events-none absolute -right-16 top-48 h-64 w-64 rounded-full bg-brand-soft/40 blur-3xl" />
+        <div className="relative mx-auto max-w-6xl px-5 pb-4 pt-12 text-center md:pt-24">
           <span className="rise inline-flex items-center gap-2 rounded-full border border-brand-soft bg-surface-1/80 px-3.5 py-1.5 text-xs font-medium text-brand-deep shadow-sm">
             <span className="relative flex h-1.5 w-1.5">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-60" />
@@ -72,7 +75,7 @@ export default function Home() {
           <div className="rise rise-3 mt-5 flex flex-row flex-wrap items-center justify-center gap-2.5 md:mt-8 md:gap-3">
             <a
               href="#pricing"
-              className="group inline-flex items-center gap-1.5 rounded-full bg-brand px-5 py-3 text-[13px] font-semibold text-white shadow-[0_10px_30px_-10px_rgba(142,110,73,0.6)] transition hover:bg-brand-deep md:px-7 md:py-3.5 md:text-sm"
+              className="cta-pulse group inline-flex items-center gap-1.5 rounded-full bg-brand px-5 py-3 text-[13px] font-semibold text-white transition hover:bg-brand-deep md:px-7 md:py-3.5 md:text-sm"
             >
               Start free trial
               <ArrowRight size={15} className="transition group-hover:translate-x-0.5" />
@@ -84,6 +87,9 @@ export default function Home() {
               Which plan fits me?
             </a>
           </div>
+          <p className="rise rise-3 mt-3 text-[11px] text-ink-subtle md:text-xs">
+            Free for 14 days. No card needed. Cancel anytime.
+          </p>
         </div>
 
         {/* product mockup with a warm glow. Phones get the FULL desktop

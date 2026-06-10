@@ -43,6 +43,16 @@ body {
   .rise { animation: none; }
 }
 
+/* Soft breathing glow on the primary hero CTA — a quiet attention magnet. */
+@keyframes ctaPulse {
+  0%, 100% { box-shadow: 0 10px 30px -10px rgba(142, 110, 73, 0.55); }
+  50%      { box-shadow: 0 12px 40px -6px rgba(142, 110, 73, 0.85); }
+}
+.cta-pulse { animation: ctaPulse 2.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .cta-pulse { animation: none; }
+}
+
 /* Subtle warm gradient used behind the hero. */
 .hero-glow {
   background:
