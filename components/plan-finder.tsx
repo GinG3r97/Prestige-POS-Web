@@ -73,21 +73,21 @@ export function PlanFinder() {
             <button
               key={p.id}
               onClick={() => setSel(p)}
-              className={`rounded-xl2 border p-5 text-left transition hover:-translate-y-0.5 ${
+              className={`rounded-xl2 border p-3.5 text-left transition hover:-translate-y-0.5 lg:p-5 ${
                 on
                   ? "border-brand bg-brand-tint/60 shadow-card"
                   : "border-hairline bg-surface-1 shadow-card hover:border-brand-soft"
               }`}
             >
               <div
-                className={`grid h-11 w-11 place-items-center rounded-xl transition ${
+                className={`grid h-9 w-9 place-items-center rounded-xl transition lg:h-11 lg:w-11 ${
                   on ? "bg-brand text-white" : "bg-brand-tint text-brand-deep"
                 }`}
               >
-                <Icon size={21} strokeWidth={1.9} />
+                <Icon size={18} strokeWidth={1.9} />
               </div>
-              <p className="mt-3 text-[15px] font-semibold text-ink">{p.title}</p>
-              <p className="mt-1 text-xs leading-relaxed text-ink-muted">{p.desc}</p>
+              <p className="mt-2.5 text-[13px] font-semibold leading-snug text-ink lg:text-[15px]">{p.title}</p>
+              <p className="mt-1 text-[11px] leading-relaxed text-ink-muted lg:text-xs">{p.desc}</p>
             </button>
           );
         })}

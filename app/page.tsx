@@ -214,7 +214,7 @@ export default function Home() {
           <span className="inline-flex items-center gap-2 rounded-full border border-brand-soft bg-brand-tint px-3.5 py-1.5 text-xs font-semibold text-brand-deep">
             Built for modern Philippine businesses
           </span>
-          <h2 className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-ink md:text-[40px]">
+          <h2 className="mt-5 text-[26px] font-semibold leading-tight tracking-tight text-ink sm:text-3xl md:text-[40px]">
             Everything your business needs.
             <br />
             <span className="bg-gradient-to-r from-brand-deep via-brand to-brand-deep bg-clip-text text-transparent">
@@ -265,10 +265,10 @@ export default function Home() {
       </section>
 
       {/* Plan finder — meet them where they are */}
-      <section id="fit" className="border-t border-hairline bg-surface-1 px-5 py-14 md:py-20">
+      <section id="fit" className="border-t border-hairline bg-gradient-to-b from-brand-tint/60 to-surface-1 px-5 py-14 md:py-20">
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-semibold tracking-tight text-ink md:text-[40px]">
+            <h2 className="text-[26px] font-semibold tracking-tight text-ink sm:text-3xl md:text-[40px]">
               Which one is you?
             </h2>
             <p className="mt-4 text-lg text-ink-muted">
@@ -286,7 +286,7 @@ export default function Home() {
       {/* Pricing */}
       <section id="pricing" className="border-t border-hairline bg-surface-2 px-5 py-14 md:py-20">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-semibold tracking-tight text-ink md:text-[40px]">
+          <h2 className="text-[26px] font-semibold tracking-tight text-ink sm:text-3xl md:text-[40px]">
             Simple pricing that pays for itself
           </h2>
           <p className="mt-4 text-lg text-ink-muted">
@@ -408,7 +408,7 @@ export default function Home() {
       <section id="faq" className="border-t border-hairline bg-surface-1 px-5 py-14 md:py-20">
         <div className="mx-auto max-w-2xl">
           <div className="text-center">
-            <h2 className="text-3xl font-semibold tracking-tight text-ink md:text-[40px]">
+            <h2 className="text-[26px] font-semibold tracking-tight text-ink sm:text-3xl md:text-[40px]">
               Questions? We got you.
             </h2>
             <p className="mt-3 text-[15px] text-ink-muted md:text-lg">
