@@ -118,19 +118,22 @@ export default function Home() {
 
       {/* Compliance band */}
       <section id="philippines" className="border-y border-hairline bg-surface-1">
-        <div className="mx-auto grid max-w-6xl gap-2.5 px-5 py-8 sm:grid-cols-3 sm:gap-5 sm:py-12">
+        <div className="mx-auto grid max-w-6xl grid-cols-3 gap-2 px-5 py-6 sm:gap-5 sm:py-12">
           {[
             { k: "Made for PH stores", v: "Peso-first pricing, VAT breakdown, and the way counters here actually run." },
             { k: "Senior / PWD", v: "Correct 20% discount with VAT exemption, logged automatically." },
             { k: "GCash & QR Ph", v: "Take the payments your customers already use, with references." },
           ].map((x) => (
-            <div key={x.k} className="flex items-start gap-3 rounded-xl2 border border-hairline bg-surface-2 p-4 sm:p-6">
-              <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-brand text-white">
+            <div
+              key={x.k}
+              className="flex flex-col items-center gap-1.5 rounded-xl2 border border-hairline bg-surface-2 p-3 text-center sm:flex-row sm:items-start sm:gap-3 sm:p-6 sm:text-left"
+            >
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-brand text-white sm:mt-0.5">
                 <Check size={15} />
               </span>
               <div>
-                <p className="text-sm font-semibold text-brand-deep">{x.k}</p>
-                <p className="mt-1 text-[13px] leading-relaxed text-ink-muted sm:text-sm">{x.v}</p>
+                <p className="text-[11px] font-semibold leading-tight text-brand-deep sm:text-sm">{x.k}</p>
+                <p className="mt-1 hidden text-sm leading-relaxed text-ink-muted sm:block">{x.v}</p>
               </div>
             </div>
           ))}
