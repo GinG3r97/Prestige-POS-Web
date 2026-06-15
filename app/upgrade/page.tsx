@@ -3,17 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
-import {
-  Store,
-  ArrowRight,
-  Loader2,
-  Check,
-  Copy,
-  ShieldCheck,
-  Clock,
-  Crown,
-  Sparkles,
-} from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { lookupStore, submitUpgrade, type StoreMatch } from "./actions";
 
 // ⚠️ EDIT GCASH_NAME and drop your QR at public/gcash-qr.png.
@@ -45,7 +35,7 @@ type Step = "lookup" | "plan" | "pay" | "done" | "status" | "maxed";
 
 export default function UpgradePage() {
   return (
-    <Suspense fallback={<main className="min-h-dvh bg-surface-2" />}>
+    <Suspense fallback={<main className="min-h-dvh bg-brand-deep" />}>
       <UpgradeFlow />
     </Suspense>
   );
@@ -112,12 +102,18 @@ function UpgradeFlow() {
   }
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-gradient-to-b from-brand-tint/40 to-surface-2 px-5 py-10">
+    <main className="flex min-h-dvh items-center justify-center bg-brand-deep px-5 py-10">
       <div className="w-full max-w-md">
-        <Header step={step} />
+        <div className="mb-6 text-center">
+          <h1 className="text-[28px] font-bold tracking-tight text-white">
+            Upgrade your store
+          </h1>
+          <p className="mt-1.5 text-sm text-brand-soft">
+            Pay with GCash · activated within a few hours
+          </p>
+        </div>
 
-        <div className="overflow-hidden rounded-3xl border border-hairline bg-surface-1 shadow-card">
-          {/* progress strip for the active flow */}
+        <div className="overflow-hidden rounded-3xl bg-surface-1 shadow-[0_30px_70px_-20px_rgba(0,0,0,0.55)]">
           {["lookup", "plan", "pay"].includes(step) && (
             <Steps current={step as "lookup" | "plan" | "pay"} />
           )}
@@ -138,9 +134,9 @@ function UpgradeFlow() {
                     placeholder="PR-XXXXXX"
                     required
                     autoFocus
-                    className="w-full rounded-xl border border-hairline bg-surface-2 px-4 py-3.5 font-mono text-sm tracking-widest text-ink outline-none transition focus:border-brand"
+                    className="w-full rounded-xl border-2 border-hairline bg-surface-2 px-4 py-3.5 font-mono text-sm font-semibold tracking-widest text-ink outline-none transition focus:border-brand"
                   />
-                  <p className="mt-1.5 text-[11px] text-ink-subtle">
+                  <p className="mt-1.5 text-[12px] text-ink-muted">
                     In the app: Settings → Subscription.
                   </p>
                 </Field>
@@ -151,7 +147,7 @@ function UpgradeFlow() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@store.com"
                     required
-                    className="w-full rounded-xl border border-hairline bg-surface-2 px-4 py-3.5 text-sm text-ink outline-none transition focus:border-brand"
+                    className="w-full rounded-xl border-2 border-hairline bg-surface-2 px-4 py-3.5 text-sm text-ink outline-none transition focus:border-brand"
                   />
                 </Field>
                 {error && <ErrorLine text={error} />}
@@ -165,66 +161,46 @@ function UpgradeFlow() {
 
                 <div className="space-y-2.5">
                   {(["basic", "pro"] as const).map((p) => (
-                    <PlanCard
-                      key={p}
-                      id={p}
-                      selected={plan === p}
-                      onSelect={() => setPlan(p)}
-                    />
+                    <PlanCard key={p} id={p} selected={plan === p} onSelect={() => setPlan(p)} />
                   ))}
                 </div>
 
-                <div className="flex rounded-full border border-hairline bg-surface-2 p-1">
+                <div className="flex rounded-full bg-surface-3 p-1">
                   {(["monthly", "yearly"] as const).map((c) => (
                     <button
                       key={c}
                       onClick={() => setCycle(c)}
-                      className={`flex-1 rounded-full py-2.5 text-[13px] font-semibold capitalize transition ${
+                      className={`flex-1 rounded-full py-2.5 text-[13px] font-bold capitalize transition ${
                         cycle === c ? "bg-brand text-white shadow-card" : "text-ink-muted"
                       }`}
                     >
                       {c}
                       {c === "yearly" && (
-                        <span className="ml-1 text-[10px] font-bold text-green-600">
-                          {cycle === "yearly" ? "· 2 mo free" : "save 2 mo"}
-                        </span>
+                        <span className="ml-1 text-[10px] font-bold text-green-600">save 2 mo</span>
                       )}
                     </button>
                   ))}
                 </div>
 
-                <div className="flex items-end justify-between rounded-2xl bg-brand-tint/60 px-4 py-3.5">
+                <div className="flex items-end justify-between rounded-2xl bg-brand-deep px-5 py-4 text-white">
                   <div>
-                    <p className="text-[12px] text-ink-muted">{planLabel(plan)} · {cycle}</p>
-                    <p className="text-[11px] text-ink-subtle">billed {cycle === "yearly" ? "yearly" : "monthly"}</p>
+                    <p className="text-[12px] font-semibold text-brand-soft">{planLabel(plan)} · {cycle}</p>
+                    <p className="text-[11px] text-brand-soft/80">billed {cycle === "yearly" ? "yearly" : "monthly"}</p>
                   </div>
-                  <span className="text-[28px] font-semibold leading-none tracking-tight text-ink">
-                    {peso(price)}
-                  </span>
+                  <span className="text-[30px] font-bold leading-none tracking-tight">{peso(price)}</span>
                 </div>
 
-                <button
-                  onClick={() => setStep("pay")}
-                  className="flex w-full items-center justify-center gap-1.5 rounded-full bg-brand px-6 py-3.5 text-sm font-semibold text-white shadow-card transition hover:bg-brand-deep"
-                >
-                  Continue to payment <ArrowRight size={16} />
-                </button>
-                <button
-                  onClick={() => setStep("lookup")}
-                  className="w-full text-center text-[13px] font-medium text-ink-muted hover:text-ink"
-                >
-                  Not your store? Change
-                </button>
+                <Submit busy={false} label="Continue to payment" onClick={() => setStep("pay")} />
+                <TextLink onClick={() => setStep("lookup")}>Not your store? Change</TextLink>
               </div>
             )}
 
             {step === "pay" && (
               <form onSubmit={doSubmit} className="space-y-4">
-                <div className="rounded-2xl border border-hairline bg-surface-2 p-4 text-center">
-                  <p className="text-[12px] text-ink-muted">Send exactly</p>
-                  <p className="text-3xl font-semibold tracking-tight text-ink">{peso(price)}</p>
-                  <p className="mt-0.5 text-[12px] text-ink-muted">via GCash to</p>
-                  <p className="text-[13px] font-semibold text-ink">{GCASH_NAME}</p>
+                <div className="rounded-2xl bg-brand-deep p-5 text-center text-white">
+                  <p className="text-[12px] font-semibold text-brand-soft">Send exactly</p>
+                  <p className="text-[34px] font-bold leading-tight tracking-tight">{peso(price)}</p>
+                  <p className="mt-0.5 text-[12px] text-brand-soft">via GCash to {GCASH_NAME}</p>
                   <CopyRow value={GCASH_NUMBER} />
                 </div>
 
@@ -238,35 +214,27 @@ function UpgradeFlow() {
                     onChange={(e) => setReference(e.target.value)}
                     placeholder="e.g. 0023 456 789012"
                     required
-                    className="w-full rounded-xl border border-hairline bg-surface-2 px-4 py-3.5 text-sm text-ink outline-none transition focus:border-brand"
+                    className="w-full rounded-xl border-2 border-hairline bg-surface-2 px-4 py-3.5 text-sm text-ink outline-none transition focus:border-brand"
                   />
-                  <p className="mt-1.5 text-[11px] text-ink-subtle">
+                  <p className="mt-1.5 text-[12px] text-ink-muted">
                     From your GCash receipt — this is how we confirm your payment.
                   </p>
                 </Field>
                 {error && <ErrorLine text={error} />}
                 <Submit busy={busy} label="I've paid — submit" />
-                <button
-                  type="button"
-                  onClick={() => setStep("plan")}
-                  className="w-full text-center text-[13px] font-medium text-ink-muted hover:text-ink"
-                >
-                  Back
-                </button>
+                <TextLink onClick={() => setStep("plan")}>Back</TextLink>
               </form>
             )}
 
             {step === "status" && store?.pending && (
-              <div className="flex flex-col items-center py-2 text-center">
-                <span className="grid h-16 w-16 place-items-center rounded-full bg-amber-100 text-amber-600">
-                  <Clock size={30} />
-                </span>
-                <h2 className="mt-4 text-lg font-semibold text-ink">Payment under review</h2>
+              <div className="text-center">
+                <Pill className="bg-amber-100 text-amber-700">Under review</Pill>
+                <h2 className="mt-3 text-xl font-bold text-ink">Payment received</h2>
                 <p className="mt-2 text-sm text-ink-muted">
-                  We received your payment for <b>{store.business_name}</b>. We&apos;re
-                  verifying it — your plan activates within a few hours.
+                  We&apos;re verifying your payment for <b className="text-ink">{store.business_name}</b>.
+                  Your plan activates within a few hours.
                 </p>
-                <div className="mt-5 w-full space-y-2 rounded-2xl border border-hairline bg-surface-2 p-4 text-left text-[13px]">
+                <div className="mt-5 space-y-2.5 rounded-2xl bg-surface-2 p-4 text-left text-[13px]">
                   <Row k="Plan" v={`${planLabel(store.pending.requested_plan)} · ${store.pending.billing_cycle}`} />
                   <Row k="Amount" v={peso(store.pending.amount_cents / 100)} />
                   <Row k="Reference" v={store.pending.gcash_reference} mono />
@@ -287,57 +255,36 @@ function UpgradeFlow() {
             )}
 
             {step === "maxed" && store && (
-              <div className="flex flex-col items-center py-4 text-center">
-                <span className="grid h-16 w-16 place-items-center rounded-full bg-brand-tint text-brand-deep">
-                  <Crown size={30} />
-                </span>
-                <h2 className="mt-4 text-lg font-semibold text-ink">You&apos;re on Pro 🎉</h2>
+              <div className="text-center">
+                <Pill className="bg-brand text-white">Pro</Pill>
+                <h2 className="mt-3 text-xl font-bold text-ink">You&apos;re on the top plan 🎉</h2>
                 <p className="mt-2 text-sm text-ink-muted">
-                  <b>{store.business_name}</b> already has the top plan — everything
+                  <b className="text-ink">{store.business_name}</b> already has everything
                   unlocked, unlimited. Nothing to upgrade!
                 </p>
               </div>
             )}
 
             {step === "done" && (
-              <div className="flex flex-col items-center py-4 text-center">
-                <span className="grid h-16 w-16 place-items-center rounded-full bg-green-100 text-green-700">
-                  <Check size={32} />
-                </span>
-                <h2 className="mt-4 text-lg font-semibold text-ink">Payment submitted</h2>
+              <div className="text-center">
+                <Pill className="bg-green-100 text-green-700">Submitted</Pill>
+                <h2 className="mt-3 text-xl font-bold text-ink">All set 🎉</h2>
                 <p className="mt-2 text-sm text-ink-muted">
                   We&apos;ll verify your reference and activate{" "}
-                  <span className="font-semibold capitalize">{plan}</span> for{" "}
-                  <span className="font-semibold">{store?.business_name}</span> within a
-                  few hours. You&apos;ll see it in the app automatically.
+                  <span className="font-semibold capitalize text-ink">{plan}</span> for{" "}
+                  <b className="text-ink">{store?.business_name}</b> within a few hours.
+                  You&apos;ll see it in the app automatically.
                 </p>
               </div>
             )}
           </div>
         </div>
 
-        <p className="mt-5 flex items-center justify-center gap-1.5 text-center text-[11px] text-ink-subtle">
-          <ShieldCheck size={12} /> Prestige IT Solutions · Manual verification
+        <p className="mt-5 text-center text-[11px] text-brand-soft/70">
+          Prestige IT Solutions · Manual verification
         </p>
       </div>
     </main>
-  );
-}
-
-function Header({ step }: { step: Step }) {
-  const done = step === "done";
-  return (
-    <div className="mb-6 flex flex-col items-center text-center">
-      <span className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-brand to-brand-deep text-white shadow-card">
-        {done ? <Sparkles size={26} /> : <Store size={26} />}
-      </span>
-      <h1 className="mt-4 text-[26px] font-semibold tracking-tight text-ink">
-        Upgrade your store
-      </h1>
-      <p className="mt-1 text-sm text-ink-muted">
-        Pay with GCash · activated within a few hours
-      </p>
-    </div>
   );
 }
 
@@ -346,20 +293,20 @@ function Steps({ current }: { current: "lookup" | "plan" | "pay" }) {
   const labels = { lookup: "Store", plan: "Plan", pay: "Pay" };
   const idx = order.indexOf(current);
   return (
-    <div className="flex items-center gap-2 border-b border-hairline bg-surface-2/50 px-6 py-3">
+    <div className="flex items-center gap-2 bg-surface-3 px-6 py-3">
       {order.map((s, i) => (
         <div key={s} className="flex flex-1 items-center gap-2">
           <span
             className={`grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10px] font-bold ${
-              i <= idx ? "bg-brand text-white" : "bg-surface-3 text-ink-subtle"
+              i <= idx ? "bg-brand text-white" : "bg-surface-1 text-ink-subtle"
             }`}
           >
-            {i < idx ? <Check size={11} /> : i + 1}
+            {i + 1}
           </span>
-          <span className={`text-[11px] font-semibold ${i <= idx ? "text-ink" : "text-ink-subtle"}`}>
+          <span className={`text-[11px] font-bold ${i <= idx ? "text-ink" : "text-ink-subtle"}`}>
             {labels[s]}
           </span>
-          {i < order.length - 1 && <span className="h-px flex-1 bg-hairline" />}
+          {i < order.length - 1 && <span className="h-0.5 flex-1 rounded bg-hairline" />}
         </div>
       ))}
     </div>
@@ -368,14 +315,9 @@ function Steps({ current }: { current: "lookup" | "plan" | "pay" }) {
 
 function StoreBanner({ name, plan }: { name: string; plan: string }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl bg-surface-2 px-3.5 py-3">
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand text-white">
-        <Store size={17} />
-      </span>
-      <div className="min-w-0">
-        <p className="truncate text-[14px] font-semibold text-ink">{name}</p>
-        <p className="text-[11px] text-ink-muted">Currently on {planLabel(plan)}</p>
-      </div>
+    <div className="rounded-2xl bg-surface-2 px-4 py-3">
+      <p className="truncate text-[15px] font-bold text-ink">{name}</p>
+      <p className="text-[12px] font-medium text-ink-muted">Currently on {planLabel(plan)}</p>
     </div>
   );
 }
@@ -394,34 +336,30 @@ function PlanCard({
     <button
       type="button"
       onClick={onSelect}
-      className={`relative w-full rounded-2xl border p-4 text-left transition ${
-        selected
-          ? "border-brand bg-brand-tint/40 ring-2 ring-brand/30"
-          : "border-hairline bg-surface-1 hover:border-brand-soft"
+      className={`relative w-full rounded-2xl border-2 p-4 text-left transition ${
+        selected ? "border-brand bg-brand-tint/50" : "border-hairline bg-surface-1 hover:border-brand-soft"
       }`}
     >
       {id === "pro" && (
-        <span className="absolute right-3 top-3 rounded-full bg-brand px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
+        <span className="absolute right-3 top-3.5 rounded-full bg-brand px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
           Popular
         </span>
       )}
       <div className="flex items-center gap-2.5">
         <span
-          className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 ${
-            selected ? "border-brand bg-brand text-white" : "border-hairline"
+          className={`h-5 w-5 shrink-0 rounded-full border-2 ${
+            selected ? "border-[6px] border-brand bg-surface-1" : "border-hairline"
           }`}
-        >
-          {selected && <Check size={12} strokeWidth={3} />}
-        </span>
+        />
         <div>
-          <p className="text-[15px] font-bold text-ink">{info.name}</p>
-          <p className="text-[11px] text-ink-muted">{info.tag}</p>
+          <p className="text-[16px] font-bold text-ink">{info.name}</p>
+          <p className="text-[11px] font-medium text-ink-muted">{info.tag}</p>
         </div>
       </div>
       <ul className="mt-2.5 grid grid-cols-2 gap-x-3 gap-y-1 pl-7">
         {info.perks.map((p) => (
-          <li key={p} className="flex items-center gap-1 text-[11px] text-ink-muted">
-            <Check size={11} className="shrink-0 text-brand" /> {p}
+          <li key={p} className="flex items-center gap-1.5 text-[11px] font-medium text-ink-muted">
+            <span className="h-1 w-1 shrink-0 rounded-full bg-brand" /> {p}
           </li>
         ))}
       </ul>
@@ -433,7 +371,7 @@ function GcashQr() {
   const [broken, setBroken] = useState(false);
   if (broken) {
     return (
-      <div className="flex aspect-square items-center justify-center rounded-2xl border border-dashed border-hairline bg-surface-2 p-4 text-center text-[11px] text-ink-subtle">
+      <div className="flex aspect-square items-center justify-center rounded-2xl border-2 border-dashed border-hairline bg-surface-2 p-4 text-center text-[11px] font-medium text-ink-subtle">
         Scan-to-pay QR
         <br />
         (add public/gcash-qr.png)
@@ -447,7 +385,7 @@ function GcashQr() {
       width={208}
       height={208}
       onError={() => setBroken(true)}
-      className="rounded-2xl border border-hairline"
+      className="rounded-2xl border-2 border-hairline"
     />
   );
 }
@@ -462,47 +400,68 @@ function CopyRow({ value }: { value: string }) {
         setCopied(true);
         setTimeout(() => setCopied(false), 1500);
       }}
-      className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-surface-1 px-3 py-1 text-[14px] font-bold tracking-wide text-brand-deep shadow-sm"
+      className="mt-2 inline-flex items-center rounded-full bg-white/15 px-4 py-1.5 text-[15px] font-bold tracking-wide text-white"
     >
-      {value} {copied ? <Check size={14} /> : <Copy size={13} />}
+      {copied ? "Copied ✓" : value}
     </button>
+  );
+}
+
+function Pill({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return (
+    <span className={`inline-block rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide ${className}`}>
+      {children}
+    </span>
   );
 }
 
 function Row({ k, v, mono = false }: { k: string; v: string; mono?: boolean }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <span className="text-ink-muted">{k}</span>
-      <span className={`font-semibold text-ink ${mono ? "font-mono" : ""}`}>{v}</span>
+      <span className="font-medium text-ink-muted">{k}</span>
+      <span className={`font-bold text-ink ${mono ? "font-mono" : ""}`}>{v}</span>
     </div>
   );
 }
 
 function ErrorLine({ text }: { text: string }) {
   return (
-    <p className="rounded-lg bg-red-50 px-3 py-2 text-[13px] font-medium text-red-600">
-      {text}
-    </p>
+    <p className="rounded-lg bg-red-50 px-3 py-2 text-[13px] font-semibold text-red-600">{text}</p>
   );
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
-        {label}
-      </span>
+      <span className="text-xs font-bold uppercase tracking-wide text-ink-muted">{label}</span>
       <div className="mt-1.5">{children}</div>
     </label>
   );
 }
 
-function Submit({ busy, label }: { busy: boolean; label: string }) {
+function TextLink({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button onClick={onClick} className="w-full text-center text-[13px] font-semibold text-ink-muted hover:text-ink">
+      {children}
+    </button>
+  );
+}
+
+function Submit({
+  busy,
+  label,
+  onClick,
+}: {
+  busy: boolean;
+  label: string;
+  onClick?: () => void;
+}) {
   return (
     <button
-      type="submit"
+      type={onClick ? "button" : "submit"}
+      onClick={onClick}
       disabled={busy}
-      className="flex w-full items-center justify-center gap-1.5 rounded-full bg-brand px-6 py-3.5 text-sm font-semibold text-white shadow-card transition hover:bg-brand-deep disabled:opacity-60"
+      className="flex w-full items-center justify-center rounded-full bg-brand px-6 py-3.5 text-sm font-bold text-white shadow-card transition hover:bg-brand-deep disabled:opacity-60"
     >
       {busy ? <Loader2 size={16} className="animate-spin" /> : label}
     </button>
