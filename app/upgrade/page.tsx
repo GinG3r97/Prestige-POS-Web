@@ -104,8 +104,16 @@ function UpgradeFlow() {
   return (
     <main className="flex min-h-dvh items-center justify-center bg-brand-deep px-5 py-10">
       <div className="w-full max-w-md">
-        <div className="mb-6 text-center">
-          <h1 className="text-[28px] font-bold tracking-tight text-white">
+        <div className="mb-6 flex flex-col items-center text-center">
+          <Image
+            src="/app_icon.png"
+            alt="Prestige POS"
+            width={56}
+            height={56}
+            priority
+            className="h-14 w-14 rounded-2xl shadow-lg ring-1 ring-white/15"
+          />
+          <h1 className="mt-4 text-[28px] font-bold tracking-tight text-white">
             Upgrade your store
           </h1>
           <p className="mt-1.5 text-sm text-brand-soft">
@@ -257,7 +265,7 @@ function UpgradeFlow() {
             {step === "maxed" && store && (
               <div className="text-center">
                 <Pill className="bg-brand text-white">Pro</Pill>
-                <h2 className="mt-3 text-xl font-bold text-ink">You&apos;re on the top plan 🎉</h2>
+                <h2 className="mt-3 text-xl font-bold text-ink">You&apos;re on the top plan</h2>
                 <p className="mt-2 text-sm text-ink-muted">
                   <b className="text-ink">{store.business_name}</b> already has everything
                   unlocked, unlimited. Nothing to upgrade!
@@ -268,7 +276,7 @@ function UpgradeFlow() {
             {step === "done" && (
               <div className="text-center">
                 <Pill className="bg-green-100 text-green-700">Submitted</Pill>
-                <h2 className="mt-3 text-xl font-bold text-ink">All set 🎉</h2>
+                <h2 className="mt-3 text-xl font-bold text-ink">All set</h2>
                 <p className="mt-2 text-sm text-ink-muted">
                   We&apos;ll verify your reference and activate{" "}
                   <span className="font-semibold capitalize text-ink">{plan}</span> for{" "}
