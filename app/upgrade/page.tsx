@@ -16,7 +16,7 @@ import { lookupStore, submitUpgrade, type StoreMatch } from "./actions";
 // ⚠️ EDIT THESE with your real GCash details (and drop your QR image at
 // public/gcash-qr.png). These are shown to the store owner to pay.
 const GCASH_NAME = "Prestige IT Solutions";
-const GCASH_NUMBER = "0917 000 0000";
+const GCASH_NUMBER = "0916 685 6160";
 
 const PRICES = {
   basic: { monthly: 499, yearly: 4990 },
