@@ -2,11 +2,20 @@
 
 import { createClient } from "@/lib/supabase/server";
 
+export type PendingRequest = {
+  requested_plan: string;
+  billing_cycle: string;
+  amount_cents: number;
+  gcash_reference: string;
+  created_at: string;
+};
+
 export type StoreMatch = {
   tenant_id: string;
   business_name: string;
   store_code: string;
   plan: string;
+  pending: PendingRequest | null;
 };
 
 export async function lookupStore(
@@ -47,6 +56,8 @@ export async function submitUpgrade(input: {
     const m = error.message;
     if (m.includes("STORE_NOT_FOUND"))
       return { ok: false, error: "That Store ID and email don't match." };
+    if (m.includes("ALREADY_PENDING"))
+      return { ok: false, error: "ALREADY_PENDING" };
     if (m.includes("REF_REQUIRED"))
       return { ok: false, error: "Enter your GCash reference number." };
     return { ok: false, error: m };
