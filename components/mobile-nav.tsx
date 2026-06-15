@@ -4,12 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 
+// Only sections that actually render on mobile (#philippines is hidden on
+// phones, so "Built for PH" is intentionally left out here)
 const links = [
   { href: "/#features", label: "Features" },
+  { href: "/#fit", label: "Which one is you?" },
   { href: "/#pricing", label: "Pricing" },
-  { href: "/#philippines", label: "Built for PH" },
-  { href: "/privacy", label: "Privacy" },
-  { href: "mailto:hello@prestigeitsolutions.tech", label: "Contact" },
+  { href: "/#faq", label: "FAQ" },
 ];
 
 export function MobileNav() {

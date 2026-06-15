@@ -1,6 +1,9 @@
 import { Header, Footer } from "@/components/site";
 import { PosMockup } from "@/components/mockup";
 import { PlanFinder } from "@/components/plan-finder";
+import { ShowcaseCarousel, type ShowSlide } from "@/components/showcase-carousel";
+import { MobileCarousel } from "@/components/mobile-carousel";
+import { PricingMobile } from "@/components/pricing-mobile";
 import {
   SellCustomizeMockup,
   InventoryMockup,
@@ -41,6 +44,51 @@ const features: Feature[] = [
   { title: "Bluetooth printing", desc: "Receipts, summaries, and the cash drawer.", icon: Printer },
   { title: "Modifiers & add-ons", desc: "Sizes, shots, and extras, priced automatically.", icon: SlidersHorizontal },
   { title: "Multiple branches", desc: "Every location in one account.", icon: Building2 },
+];
+
+const featureGroups: { label: string; items: number[] }[] = [
+  { label: "Sell faster", items: [0, 10, 5] },
+  { label: "Every sale covered", items: [1, 2, 9] },
+  { label: "Run the back office", items: [3, 4, 7] },
+  { label: "Stay in control", items: [6, 8, 11] },
+];
+
+const showcaseSlides: ShowSlide[] = [
+  {
+    tag: "Make it yours",
+    title: "Customize your Sell screen",
+    body: "Arrange your menu exactly how your staff think. Drag to reorder, group items by type, and add or hide products in seconds. No developer needed.",
+    points: ["Drag-and-drop reorder", "Group by type & sub-type", "Add or hide items instantly"],
+    mockup: <SellCustomizeMockup />,
+  },
+  {
+    tag: "Always accurate",
+    title: "Inventory that updates itself",
+    body: "Stock auto-deducts on every sale. Spot low and out-of-stock items at a glance, set reorder thresholds, and always know your live stock value.",
+    points: ["Auto-deducts on each sale", "Low / out-of-stock alerts", "Reorder thresholds & stock value"],
+    mockup: <InventoryMockup />,
+  },
+  {
+    tag: "No spreadsheets",
+    title: "Run payroll in minutes",
+    body: "Timesheets, rates, bonuses and deductions roll into a clean pay run. See what each employee takes home and the total for the team, then mark it paid.",
+    points: ["Hourly, daily & salaried", "Bonuses & deductions", "Net payable, ready to pay"],
+    mockup: <PayrollMockup />,
+  },
+  {
+    tag: "Full control",
+    title: "Manage your whole team",
+    body: "Roles, PINs, schedules and pay in one place. Give each cashier exactly the access they need while owners stay firmly in control.",
+    points: ["Secure per-cashier PINs", "Owner, Manager, Cashier roles", "Schedules & pay on file"],
+    mockup: <EmployeesMockup />,
+  },
+  {
+    tag: "Know your numbers",
+    title: "Your day, at a glance",
+    body: "Today's revenue, orders, average ticket and top sellers, live on your dashboard from any device. You always know how the store is doing.",
+    points: ["Live revenue & orders", "Average ticket", "Top sellers today"],
+    mockup: <DashboardMockup />,
+  },
 ];
 
 export default function Home() {
@@ -117,7 +165,7 @@ export default function Home() {
       </section>
 
       {/* Compliance band */}
-      <section id="philippines" className="border-y border-hairline bg-surface-1">
+      <section id="philippines" className="hidden border-y border-hairline bg-surface-1 sm:block">
         <div className="mx-auto grid max-w-6xl grid-cols-3 gap-2 px-5 py-6 sm:gap-5 sm:py-12">
           {[
             { k: "Made for PH stores", v: "Peso-first pricing, VAT breakdown, and the way counters here actually run." },
@@ -141,69 +189,40 @@ export default function Home() {
       </section>
 
       {/* Showcase — deep dives with real-looking UI */}
-      <section id="showcase" className="mx-auto max-w-6xl space-y-14 px-5 py-14 md:space-y-28 md:py-20">
-        {[
-          {
-            tag: "Make it yours",
-            title: "Customize your Sell screen",
-            body: "Arrange your menu exactly how your staff think. Drag to reorder, group items by type, and add or hide products in seconds. No developer needed.",
-            points: ["Drag-and-drop reorder", "Group by type & sub-type", "Add or hide items instantly"],
-            mockup: <SellCustomizeMockup />,
-          },
-          {
-            tag: "Always accurate",
-            title: "Inventory that updates itself",
-            body: "Stock auto-deducts on every sale. Spot low and out-of-stock items at a glance, set reorder thresholds, and always know your live stock value.",
-            points: ["Auto-deducts on each sale", "Low / out-of-stock alerts", "Reorder thresholds & stock value"],
-            mockup: <InventoryMockup />,
-          },
-          {
-            tag: "No spreadsheets",
-            title: "Run payroll in minutes",
-            body: "Timesheets, rates, bonuses and deductions roll into a clean pay run. See what each employee takes home and the total for the team, then mark it paid.",
-            points: ["Hourly, daily & salaried", "Bonuses & deductions", "Net payable, ready to pay"],
-            mockup: <PayrollMockup />,
-          },
-          {
-            tag: "Full control",
-            title: "Manage your whole team",
-            body: "Roles, PINs, schedules and pay in one place. Give each cashier exactly the access they need while owners stay firmly in control.",
-            points: ["Secure per-cashier PINs", "Owner, Manager, Cashier roles", "Schedules & pay on file"],
-            mockup: <EmployeesMockup />,
-          },
-          {
-            tag: "Know your numbers",
-            title: "Your day, at a glance",
-            body: "Today's revenue, orders, average ticket and top sellers, live on your dashboard from any device. You always know how the store is doing.",
-            points: ["Live revenue & orders", "Average ticket", "Top sellers today"],
-            mockup: <DashboardMockup />,
-          },
-        ].map((row, i) => (
-          <div
-            key={row.title}
-            className={`flex flex-col items-center gap-8 md:gap-14 ${i % 2 === 1 ? "md:flex-row-reverse" : "md:flex-row"}`}
-          >
-            <div className="flex-1">
-              <span className="inline-flex rounded-full bg-brand-tint px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-brand-deep">
-                {row.tag}
-              </span>
-              <h3 className="mt-2.5 text-[22px] font-semibold leading-snug tracking-tight text-ink md:text-3xl">{row.title}</h3>
-              <p className="mt-2.5 text-sm leading-relaxed text-ink-muted md:mt-3 md:text-[15px]">{row.body}</p>
-              <ul className="mt-4 space-y-2 md:mt-5 md:space-y-2.5">
-                {row.points.map((pt) => (
-                  <li key={pt} className="flex items-center gap-2.5 text-[13px] text-ink md:text-sm">
-                    <Check size={15} className="shrink-0 text-brand" />
-                    {pt}
-                  </li>
-                ))}
-              </ul>
+      <section id="showcase" className="mx-auto max-w-6xl px-5 py-14 md:py-20">
+        {/* Mobile: swipeable slideshow instead of a long scroll */}
+        <div className="md:hidden">
+          <ShowcaseCarousel slides={showcaseSlides} />
+        </div>
+
+        {/* Desktop: the full alternating two-pane deep dives */}
+        <div className="hidden md:block md:space-y-28">
+          {showcaseSlides.map((row, i) => (
+            <div
+              key={row.title}
+              className={`flex flex-col items-center gap-8 md:gap-14 ${i % 2 === 1 ? "md:flex-row-reverse" : "md:flex-row"}`}
+            >
+              <div className="flex-1">
+                <span className="inline-flex rounded-full bg-brand-tint px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-brand-deep">
+                  {row.tag}
+                </span>
+                <h3 className="mt-2.5 text-[22px] font-semibold leading-snug tracking-tight text-ink md:text-3xl">{row.title}</h3>
+                <p className="mt-2.5 text-sm leading-relaxed text-ink-muted md:mt-3 md:text-[15px]">{row.body}</p>
+                <ul className="mt-4 space-y-2 md:mt-5 md:space-y-2.5">
+                  {row.points.map((pt) => (
+                    <li key={pt} className="flex items-center gap-2.5 text-[13px] text-ink md:text-sm">
+                      <Check size={15} className="shrink-0 text-brand" />
+                      {pt}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="w-full flex-1">{row.mockup}</div>
             </div>
-            {/* keep mobile short: only the first 2 deep-dives show their
-                mockup on phones; the rest rely on the copy + checkmarks */}
-            <div className={`w-full flex-1 ${i >= 2 ? "hidden md:block" : ""}`}>{row.mockup}</div>
-          </div>
-        ))}
-        <p className="text-center text-[15px] text-ink-muted">
+          ))}
+        </div>
+
+        <p className="hidden text-center text-[15px] text-ink-muted md:mt-28 md:block">
           And that&apos;s just the start.{" "}
           <a href="#features" className="font-semibold text-brand-deep underline underline-offset-2">
             See everything included
@@ -212,9 +231,9 @@ export default function Home() {
       </section>
 
       {/* Features */}
-      <section id="features" className="mx-auto max-w-6xl px-5 py-14 md:py-20">
+      <section id="features" className="mx-auto max-w-6xl px-5 pb-14 pt-4 md:py-20">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-brand-soft bg-brand-tint px-3.5 py-1.5 text-xs font-semibold text-brand-deep">
+          <span className="hidden items-center gap-2 rounded-full border border-brand-soft bg-brand-tint px-3.5 py-1.5 text-xs font-semibold text-brand-deep md:inline-flex">
             Built for modern Philippine businesses
           </span>
           <h2 className="mt-5 text-[26px] font-semibold leading-tight tracking-tight text-ink sm:text-3xl md:text-[40px]">
@@ -230,13 +249,44 @@ export default function Home() {
             confidence.
           </p>
         </div>
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            { label: "Sell faster", items: [0, 10, 5] },
-            { label: "Every sale covered", items: [1, 2, 9] },
-            { label: "Run the back office", items: [3, 4, 7] },
-            { label: "Stay in control", items: [6, 8, 11] },
-          ].map((group) => (
+        {/* Mobile: each group becomes a slide — a feature sheet with a
+            colored header and item descriptions desktop doesn't show */}
+        <div className="mt-10 md:hidden">
+          <MobileCarousel
+            counterNoun="Set"
+            hint="Swipe through what's included"
+            slides={featureGroups.map((group) => (
+              <div
+                key={group.label}
+                className="overflow-hidden rounded-2xl border border-hairline bg-surface-1 shadow-card"
+              >
+                <div className="bg-gradient-to-r from-brand-deep to-brand px-5 py-3">
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-white">{group.label}</p>
+                </div>
+                <ul className="divide-y divide-hairline">
+                  {group.items.map((idx) => {
+                    const { title, desc, icon: Icon } = features[idx];
+                    return (
+                      <li key={title} className="flex items-center gap-3 px-5 py-3.5">
+                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand-tint text-brand-deep">
+                          <Icon size={17} strokeWidth={1.9} />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold leading-tight text-ink">{title}</p>
+                          <p className="mt-0.5 text-[11px] leading-snug text-ink-muted">{desc}</p>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
+          />
+        </div>
+
+        {/* Desktop: the compact four-column card grid */}
+        <div className="mt-12 hidden gap-4 sm:grid-cols-2 md:grid lg:grid-cols-4">
+          {featureGroups.map((group) => (
             <div
               key={group.label}
               className="rounded-xl2 border border-hairline bg-surface-1 p-6 shadow-card transition hover:-translate-y-1 hover:border-brand-soft"
@@ -274,7 +324,7 @@ export default function Home() {
             <h2 className="text-[26px] font-semibold tracking-tight text-ink sm:text-3xl md:text-[40px]">
               Which one is you?
             </h2>
-            <p className="mt-4 text-lg text-ink-muted">
+            <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-ink-muted md:mt-4 md:max-w-none md:text-lg">
               99.6% of businesses in the Philippines are micro, small, or medium.
               Prestige was built for every single one. Tap your setup and see
               your fit.
@@ -296,9 +346,20 @@ export default function Home() {
             Try everything free for 14 days, no card needed. Then pick the plan
             that fits your store. Cancel anytime.
           </p>
+          <p className="mt-3 text-sm text-ink-muted">
+            Already using Prestige?{" "}
+            <a href="/upgrade" className="font-semibold text-brand-deep underline underline-offset-2">
+              Upgrade your plan →
+            </a>
+          </p>
         </div>
 
-        <div className="mx-auto mt-12 grid max-w-4xl items-stretch gap-6 md:grid-cols-2">
+        {/* Mobile: one plan at a time behind a Basic/Pro toggle */}
+        <div className="mt-10 md:hidden">
+          <PricingMobile />
+        </div>
+
+        <div className="mx-auto mt-12 hidden max-w-4xl items-stretch gap-6 md:grid md:grid-cols-2">
           {/* Basic */}
           <div className="flex flex-col rounded-[1.5rem] border border-hairline bg-surface-1 p-7 shadow-card">
             <p className="text-sm font-semibold uppercase tracking-wide text-ink-muted">Basic</p>
@@ -418,7 +479,7 @@ export default function Home() {
               The things store owners ask us before they start.
             </p>
           </div>
-          <div className="mt-10 space-y-3">
+          <div className="mt-7 space-y-2 md:mt-10 md:space-y-3">
             {[
               {
                 q: "What do I need to run Prestige POS?",
@@ -447,15 +508,15 @@ export default function Home() {
             ].map((f) => (
               <details
                 key={f.q}
-                className="group rounded-xl2 border border-hairline bg-surface-2 px-5 py-4 transition hover:border-brand-soft"
+                className="group rounded-xl2 border border-hairline bg-surface-2 px-4 py-3 transition hover:border-brand-soft md:px-5 md:py-4"
               >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[15px] font-semibold text-ink">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[13.5px] font-semibold leading-snug text-ink md:text-[15px]">
                   {f.q}
-                  <span className="shrink-0 text-lg font-medium text-brand-deep transition group-open:rotate-45">
+                  <span className="shrink-0 text-base font-medium text-brand-deep transition group-open:rotate-45 md:text-lg">
                     +
                   </span>
                 </summary>
-                <p className="mt-3 text-sm leading-relaxed text-ink-muted">{f.a}</p>
+                <p className="mt-2.5 text-[13px] leading-relaxed text-ink-muted md:text-sm">{f.a}</p>
               </details>
             ))}
           </div>

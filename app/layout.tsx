@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { ScrollTop } from "@/components/scroll-top";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
     type: "website",
     url: "https://prestigeitsolutions.tech",
   },
-  icons: { icon: "/favicon.svg" },
+  icons: { icon: "/app_icon.png", apple: "/app_icon.png" },
 };
 
 export default function RootLayout({
@@ -39,7 +40,10 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
         />
       </head>
-      <body className="font-sans">{children}</body>
+      <body className="font-sans">
+        {children}
+        <ScrollTop />
+      </body>
     </html>
   );
 }

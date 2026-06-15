@@ -23,6 +23,9 @@
 
 html {
   scroll-behavior: smooth;
+  /* offset anchor jumps so the sticky header (h-16) never covers the
+     target section's heading */
+  scroll-padding-top: 5rem;
 }
 
 body {
