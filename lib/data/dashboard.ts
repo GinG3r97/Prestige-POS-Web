@@ -38,6 +38,37 @@ export async function getPaymentRequests(): Promise<PaymentRequest[]> {
   return (data ?? []) as PaymentRequest[];
 }
 
+export type MyStoreAttendance = {
+  tenantId: string;
+  businessName: string;
+  storeCode: string | null;
+  geoLat: number | null;
+  geoLng: number | null;
+  geoRadius: number;
+};
+
+export async function getMyStoreAttendance(): Promise<MyStoreAttendance | null> {
+  const supa = createClient();
+  const {
+    data: { user },
+  } = await supa.auth.getUser();
+  if (!user) return null;
+  const { data } = await supa
+    .from("tenants")
+    .select("id, business_name, store_code, geo_lat, geo_lng, geo_radius_m")
+    .eq("owner_id", user.id)
+    .maybeSingle();
+  if (!data) return null;
+  return {
+    tenantId: data.id,
+    businessName: data.business_name,
+    storeCode: data.store_code,
+    geoLat: data.geo_lat,
+    geoLng: data.geo_lng,
+    geoRadius: data.geo_radius_m ?? 200,
+  };
+}
+
 export async function isAdmin(): Promise<boolean> {
   const supa = createClient();
   const { data } = await supa.rpc("is_admin");

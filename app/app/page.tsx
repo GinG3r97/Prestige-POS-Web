@@ -1,4 +1,5 @@
-import { Store } from "lucide-react";
+import Link from "next/link";
+import { Store, Clock, ChevronRight } from "lucide-react";
 import { getMyTenantId, getTenantDetail } from "@/lib/data/dashboard";
 import { StoreDashboard } from "@/components/dashboard/store-dashboard";
 import { PortalHeader } from "@/components/dashboard/portal-header";
@@ -36,7 +37,20 @@ export default async function ClientPortalPage() {
   return (
     <>
       <PortalHeader title={d.tenant.business_name} subtitle="Your store" />
-      <main className="mx-auto max-w-4xl px-4 py-5">
+      <main className="mx-auto max-w-4xl space-y-4 px-4 py-5">
+        <Link
+          href="/app/attendance"
+          className="flex items-center gap-3 rounded-2xl border border-hairline bg-surface-1 p-4 shadow-card transition hover:border-brand-soft"
+        >
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-tint text-brand-deep">
+            <Clock size={18} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-ink">Staff attendance</p>
+            <p className="text-[12px] text-ink-muted">QR time clock · store location · selfies</p>
+          </div>
+          <ChevronRight size={16} className="text-ink-subtle" />
+        </Link>
         <StoreDashboard d={d} />
       </main>
     </>
