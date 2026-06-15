@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Fragment, Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Loader2 } from "lucide-react";
@@ -301,21 +301,25 @@ function Steps({ current }: { current: "lookup" | "plan" | "pay" }) {
   const labels = { lookup: "Store", plan: "Plan", pay: "Pay" };
   const idx = order.indexOf(current);
   return (
-    <div className="flex items-center gap-2 bg-surface-3 px-6 py-3">
+    <div className="flex items-start justify-center gap-3 bg-surface-3 px-6 py-4">
       {order.map((s, i) => (
-        <div key={s} className="flex flex-1 items-center gap-2">
-          <span
-            className={`grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10px] font-bold ${
-              i <= idx ? "bg-brand text-white" : "bg-surface-1 text-ink-subtle"
-            }`}
-          >
-            {i + 1}
-          </span>
-          <span className={`text-[11px] font-bold ${i <= idx ? "text-ink" : "text-ink-subtle"}`}>
-            {labels[s]}
-          </span>
-          {i < order.length - 1 && <span className="h-0.5 flex-1 rounded bg-hairline" />}
-        </div>
+        <Fragment key={s}>
+          <div className="flex flex-col items-center gap-1.5">
+            <span
+              className={`grid h-6 w-6 shrink-0 place-items-center rounded-full text-[10px] font-bold ${
+                i <= idx ? "bg-brand text-white" : "bg-surface-1 text-ink-subtle"
+              }`}
+            >
+              {i + 1}
+            </span>
+            <span className={`text-[11px] font-bold ${i <= idx ? "text-ink" : "text-ink-subtle"}`}>
+              {labels[s]}
+            </span>
+          </div>
+          {i < order.length - 1 && (
+            <span className="mt-3 h-0.5 w-8 shrink-0 rounded bg-hairline" />
+          )}
+        </Fragment>
       ))}
     </div>
   );
