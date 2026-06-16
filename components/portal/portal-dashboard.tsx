@@ -6,7 +6,7 @@ import Image from "next/image";
 import {
   LogOut, Camera, RefreshCw, Loader2, Check, X, MapPin, Lock,
   CalendarDays, Clock3, TimerOff, Plane, Fingerprint, ClipboardList,
-  ChevronLeft, ChevronRight, Wallet,
+  Wallet, HeartPulse, Palmtree, Umbrella, Baby, Sparkles,
 } from "lucide-react";
 import {
   punch, fileRequest, portalSignOut, getWeek,
@@ -251,8 +251,6 @@ export function PortalDashboard({
           offset={weekOffset}
           busy={weekBusy}
           todayIso={today}
-          onPrev={() => loadWeek(weekOffset + 1)}
-          onNext={() => loadWeek(weekOffset - 1)}
           onJump={loadWeek}
         />
 
@@ -377,34 +375,28 @@ function ClockDial({ open, canClock, busy, onTap }: {
   );
 }
 
-function WeekCard({ week, offset, busy, todayIso, onPrev, onNext, onJump }: {
+function WeekCard({ week, offset, busy, todayIso, onJump }: {
   week: WeekSummary; offset: number; busy: boolean; todayIso: string;
-  onPrev: () => void; onNext: () => void; onJump: (o: number) => void;
+  onJump: (o: number) => void;
 }) {
-  const label = offset === 0 ? "This week" : offset === 1 ? "Last week" : `${offset} weeks ago`;
   return (
     <div className="rounded-3xl border border-hairline bg-surface-1 p-5 shadow-card">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-brand-deep">
           <CalendarDays size={15} /> Attendance
         </h2>
-        <div className="flex items-center gap-1.5">
-          <button onClick={onPrev} aria-label="Earlier week"
-            className="grid h-7 w-7 place-items-center rounded-full bg-surface-2 text-ink-muted transition hover:bg-surface-3">
-            <ChevronLeft size={15} />
-          </button>
-          <span className="min-w-[78px] text-center text-[12px] font-bold text-ink">{label}</span>
-          <button onClick={onNext} disabled={offset === 0} aria-label="Later week"
-            className="grid h-7 w-7 place-items-center rounded-full bg-surface-2 text-ink-muted transition hover:bg-surface-3 disabled:opacity-40">
-            <ChevronRight size={15} />
-          </button>
-        </div>
+        {week && (
+          <span className="text-[11px] font-semibold tabular-nums text-ink-subtle">
+            {week.week_start.slice(5)} – {week.week_end.slice(5)}
+          </span>
+        )}
       </div>
-      <div className="mb-3 flex gap-1.5">
+      {/* Single segmented control — this / last / 2 wks ago */}
+      <div className="mb-4 grid grid-cols-3 gap-1 rounded-full bg-surface-2 p-1">
         {[0, 1, 2].map((o) => (
           <button key={o} onClick={() => onJump(o)}
-            className={`rounded-full px-3 py-1 text-[11px] font-bold transition ${
-              offset === o ? "bg-brand text-white" : "bg-surface-2 text-ink-muted"}`}>
+            className={`rounded-full py-1.5 text-[11.5px] font-bold transition ${
+              offset === o ? "bg-brand text-white shadow-sm" : "text-ink-muted hover:text-ink"}`}>
             {o === 0 ? "This week" : o === 1 ? "Last week" : "2 wks ago"}
           </button>
         ))}
@@ -413,7 +405,6 @@ function WeekCard({ week, offset, busy, todayIso, onPrev, onNext, onJump }: {
         <div className="py-10 text-center"><Loader2 size={20} className="mx-auto animate-spin text-ink-subtle" /></div>
       ) : (
         <>
-          <p className="mb-2 text-[11px] font-semibold text-ink-subtle">{week.week_start} – {week.week_end}</p>
           <div className="divide-y divide-hairline">
             {week.days.map((d) => <WeekDayRow key={d.date} d={d} isToday={d.date === todayIso} />)}
           </div>
@@ -481,13 +472,30 @@ function Tot({ label, value, strong, ok, warn }: {
   );
 }
 
+function leaveIcon(name: string) {
+  const n = name.toLowerCase();
+  if (n.includes("sick")) return HeartPulse;
+  if (n.includes("vacation") || n.includes("holiday")) return Palmtree;
+  if (n.includes("matern") || n.includes("patern") || n.includes("parental")) return Baby;
+  if (n.includes("incentive") || n.includes("service")) return Sparkles;
+  if (n.includes("emergency") || n.includes("bereave")) return Umbrella;
+  return CalendarDays;
+}
+
 function LeaveCreditsCard({ credits }: { credits: LeaveCredit[] }) {
   return (
     <Section title="Leave credits" icon={Wallet}>
       <div className="grid grid-cols-2 gap-2">
-        {credits.map((c) => (
+        {credits.map((c) => {
+          const Icon = leaveIcon(c.name);
+          return (
           <div key={c.id} className="rounded-2xl border border-hairline bg-surface-2 p-3">
-            <p className="truncate text-[12px] font-bold text-ink">{c.emoji ? c.emoji + " " : ""}{c.name}</p>
+            <div className="flex items-center gap-2">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-brand-tint text-brand-deep">
+                <Icon size={15} />
+              </span>
+              <p className="truncate text-[12px] font-bold text-ink">{c.name}</p>
+            </div>
             {c.annual_days == null ? (
               <p className="mt-1 text-[17px] font-extrabold text-brand-deep">Unlimited</p>
             ) : (
@@ -500,7 +508,8 @@ function LeaveCreditsCard({ credits }: { credits: LeaveCredit[] }) {
               </>
             )}
           </div>
-        ))}
+          );
+        })}
       </div>
     </Section>
   );
@@ -648,6 +657,8 @@ function RequestModal({ kind, leaveTypes, today, store, onClose, onFiled }: {
   const [error, setError] = useState<string | null>(null);
 
   const titles = { leave: "File Leave", ot: "File Overtime", undertime: "File Undertime" };
+  const subtitles = { leave: "Request time off", ot: "Log extra hours", undertime: "Leave early" };
+  const Icon = kind === "leave" ? Plane : kind === "ot" ? Clock3 : TimerOff;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -667,10 +678,20 @@ function RequestModal({ kind, leaveTypes, today, store, onClose, onFiled }: {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center" onClick={onClose}>
-      <form onSubmit={submit} className="w-full max-w-sm space-y-3 rounded-3xl bg-surface-1 p-5" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-ink">{titles[kind]}</h2>
-          <button type="button" onClick={onClose} className="text-ink-muted"><X size={18} /></button>
+      <form onSubmit={submit} className="w-full max-w-sm space-y-3 rounded-t-3xl bg-surface-1 p-5 pb-6 sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
+        <div className="mx-auto -mt-1 mb-1 h-1.5 w-10 rounded-full bg-hairline sm:hidden" />
+        <div className="flex items-center gap-3">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-brand-tint text-brand-deep">
+            <Icon size={20} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-base font-bold leading-tight text-ink">{titles[kind]}</h2>
+            <p className="text-[12px] text-ink-muted">{subtitles[kind]}</p>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Close"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-surface-2 text-ink-muted transition hover:bg-surface-3">
+            <X size={16} />
+          </button>
         </div>
 
         {kind === "leave" && (
@@ -699,10 +720,12 @@ function RequestModal({ kind, leaveTypes, today, store, onClose, onFiled }: {
           <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="Short reason…"
             className="w-full resize-none rounded-xl border-2 border-hairline bg-surface-2 px-3 py-2.5 text-sm text-ink outline-none focus:border-brand" />
         </Field>
-        {error && <p className="text-[13px] font-semibold text-red-600">{error}</p>}
+        {error && (
+          <p className="rounded-lg bg-red-50 px-3 py-2 text-[13px] font-semibold text-red-600">{error}</p>
+        )}
         <button type="submit" disabled={busy}
-          className="flex w-full items-center justify-center gap-1.5 rounded-full bg-brand px-6 py-3 text-sm font-bold text-white shadow-card disabled:opacity-60">
-          {busy ? <Loader2 size={16} className="animate-spin" /> : "Submit request"}
+          className="mt-1 flex w-full items-center justify-center gap-2 rounded-full bg-brand px-6 py-3.5 text-sm font-bold text-white shadow-card transition hover:bg-brand-deep disabled:opacity-60">
+          {busy ? <Loader2 size={16} className="animate-spin" /> : <><Check size={16} /> Submit request</>}
         </button>
       </form>
     </div>
