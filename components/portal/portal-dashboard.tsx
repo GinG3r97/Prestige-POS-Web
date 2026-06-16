@@ -128,7 +128,7 @@ export function PortalDashboard({
     !storeHasGeofence
       ? { text: "Store location isn’t set yet — ask your manager to set it in the app.", tone: "warn" }
       : locDenied
-        ? { text: "Turn on location to clock in.", tone: "warn" }
+        ? { text: `Turn on location to clock ${open ? "out" : "in"}.`, tone: "warn" }
         : !coords
           ? { text: "Getting your location…", tone: "muted" }
           : !withinRadius
