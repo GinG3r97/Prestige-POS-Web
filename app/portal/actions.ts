@@ -47,6 +47,27 @@ export type PortalRequest = {
 
 export type LeaveType = { id: string; name: string; paid: boolean; emoji?: string };
 
+export type WeekSummary = {
+  week_start: string;
+  week_end: string;
+  offset: number;
+  days: NonNullable<DaySummary>[];
+  totals: {
+    worked_min: number; late_min: number; undertime_min: number;
+    ot_min: number; restday_min: number;
+  };
+} | null;
+
+export type LeaveCredit = {
+  id: string;
+  name: string;
+  emoji?: string;
+  paid: boolean;
+  annual_days: number | null;
+  used_days: number;
+  remaining_days: number | null;
+};
+
 // Every portal RPC takes the store code from the QR's ?store=. It checks the
 // signed-in email is an employee AT THAT store — it never widens access, so
 // it's safe to pass straight from the URL. (No store picker: the URL decides.)
@@ -78,6 +99,18 @@ export async function getLeaveTypes(store?: string | null): Promise<LeaveType[]>
   const supa = createClient();
   const { data } = await supa.rpc("portal_leave_types", { p_store: store ?? null });
   return (data ?? []) as LeaveType[];
+}
+
+export async function getWeek(offset: number, store?: string | null): Promise<WeekSummary> {
+  const supa = createClient();
+  const { data } = await supa.rpc("portal_week", { p_offset: offset, p_store: store ?? null });
+  return (data as WeekSummary) ?? null;
+}
+
+export async function getLeaveCredits(store?: string | null): Promise<LeaveCredit[]> {
+  const supa = createClient();
+  const { data } = await supa.rpc("portal_leave_credits", { p_store: store ?? null });
+  return (data ?? []) as LeaveCredit[];
 }
 
 export async function punch(input: {

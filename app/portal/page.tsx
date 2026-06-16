@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { Lock } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { getMe, getToday, getClockOpen, getRequests, getLeaveTypes, portalSignOut } from "./actions";
+import { getMe, getToday, getClockOpen, getRequests, getLeaveTypes, getWeek, getLeaveCredits, portalSignOut } from "./actions";
 import { PortalDashboard } from "@/components/portal/portal-dashboard";
 
 export const dynamic = "force-dynamic";
@@ -31,11 +31,13 @@ export default async function PortalPage({
   // "Today" in Manila (UTC+8).
   const today = new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10);
   const scope = me.store_code ?? store;
-  const [summary, open, requests, leaveTypes] = await Promise.all([
+  const [summary, open, requests, leaveTypes, week, credits] = await Promise.all([
     getToday(today, scope),
     getClockOpen(scope),
     getRequests(scope),
     getLeaveTypes(scope),
+    getWeek(0, scope),
+    getLeaveCredits(scope),
   ]);
 
   return (
@@ -46,6 +48,8 @@ export default async function PortalPage({
       open={open}
       requests={requests}
       leaveTypes={leaveTypes}
+      week={week}
+      credits={credits}
       store={scope}
     />
   );

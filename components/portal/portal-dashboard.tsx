@@ -6,10 +6,12 @@ import Image from "next/image";
 import {
   LogOut, Camera, RefreshCw, Loader2, Check, X, MapPin, Lock,
   CalendarDays, Clock3, TimerOff, Plane, Fingerprint, ClipboardList,
+  ChevronLeft, ChevronRight, Wallet,
 } from "lucide-react";
 import {
-  punch, fileRequest, portalSignOut,
+  punch, fileRequest, portalSignOut, getWeek,
   type PortalMe, type DaySummary, type PortalRequest, type LeaveType,
+  type WeekSummary, type LeaveCredit,
 } from "@/app/portal/actions";
 
 const WD = ["", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -47,7 +49,7 @@ function distanceM(aLat: number, aLng: number, bLat: number, bLng: number): numb
 }
 
 export function PortalDashboard({
-  me, today, summary, open, requests, leaveTypes, store,
+  me, today, summary, open, requests, leaveTypes, week, credits, store,
 }: {
   me: NonNullable<PortalMe>;
   today: string;
@@ -55,6 +57,8 @@ export function PortalDashboard({
   open: boolean;
   requests: PortalRequest[];
   leaveTypes: LeaveType[];
+  week: WeekSummary;
+  credits: LeaveCredit[];
   store: string | null;
 }) {
   const router = useRouter();
@@ -65,6 +69,18 @@ export function PortalDashboard({
   const [toast, setToast] = useState<string | null>(null);
   const [now, setNow] = useState<Date | null>(null);
   const [locDenied, setLocDenied] = useState(false);
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [weekData, setWeekData] = useState<WeekSummary>(week);
+  const [weekBusy, setWeekBusy] = useState(false);
+  const [reqFilter, setReqFilter] = useState<"all" | "leave" | "ot" | "undertime">("all");
+
+  async function loadWeek(offset: number) {
+    if (offset < 0 || offset > 8) return;
+    setWeekOffset(offset);
+    setWeekBusy(true);
+    setWeekData(await getWeek(offset, store));
+    setWeekBusy(false);
+  }
 
   useEffect(() => {
     if (!navigator.geolocation) { setLocDenied(true); return; }
@@ -229,6 +245,20 @@ export function PortalDashboard({
           </div>
         </div>
 
+        {/* This week's attendance (switch weeks) */}
+        <WeekCard
+          week={weekData}
+          offset={weekOffset}
+          busy={weekBusy}
+          todayIso={today}
+          onPrev={() => loadWeek(weekOffset + 1)}
+          onNext={() => loadWeek(weekOffset - 1)}
+          onJump={loadWeek}
+        />
+
+        {/* Leave credits */}
+        {credits.length > 0 && <LeaveCreditsCard credits={credits} />}
+
         {/* Schedule */}
         <Section title="My schedule" icon={CalendarDays}>
           <div className="grid grid-cols-7 gap-1.5">
@@ -252,28 +282,39 @@ export function PortalDashboard({
           </div>
         </Section>
 
-        {/* Requests */}
-        <Section title="My requests" icon={ClipboardList}>
-          {requests.length === 0 ? (
-            <p className="text-[13px] text-ink-subtle">Nothing filed yet.</p>
-          ) : (
-            <ul className="space-y-2">
-              {requests.map((r) => (
-                <li key={r.id} className="flex items-center justify-between rounded-xl bg-surface-2 px-3 py-2.5">
-                  <div className="min-w-0">
-                    <p className="text-[13px] font-bold capitalize text-ink">
-                      {r.kind === "leave" ? (r.leave_type_name ?? "Leave") : r.kind === "ot" ? "Overtime" : "Undertime"}
-                    </p>
-                    <p className="text-[11px] text-ink-muted">
-                      {r.start_date}{r.end_date && r.end_date !== r.start_date ? ` → ${r.end_date}` : ""}
-                      {r.hours ? ` · ${r.hours}h` : ""}
-                    </p>
-                  </div>
-                  <StatusBadge status={r.status} />
-                </li>
-              ))}
-            </ul>
-          )}
+        {/* Filing history — Leave / OT / UT */}
+        <Section title="My filings" icon={ClipboardList}>
+          <div className="mb-3 flex gap-1.5">
+            {([["all", "All"], ["leave", "Leave"], ["ot", "OT"], ["undertime", "UT"]] as const).map(([k, label]) => (
+              <button key={k} onClick={() => setReqFilter(k)}
+                className={`rounded-full px-3 py-1 text-[12px] font-bold transition ${
+                  reqFilter === k ? "bg-brand text-white" : "bg-surface-2 text-ink-muted"}`}>
+                {label}
+              </button>
+            ))}
+          </div>
+          {(() => {
+            const list = reqFilter === "all" ? requests : requests.filter((r) => r.kind === reqFilter);
+            if (list.length === 0) return <p className="text-[13px] text-ink-subtle">Nothing here yet.</p>;
+            return (
+              <ul className="space-y-2">
+                {list.map((r) => (
+                  <li key={r.id} className="flex items-center justify-between rounded-xl bg-surface-2 px-3 py-2.5">
+                    <div className="min-w-0">
+                      <p className="text-[13px] font-bold capitalize text-ink">
+                        {r.kind === "leave" ? (r.leave_type_name ?? "Leave") : r.kind === "ot" ? "Overtime" : "Undertime"}
+                      </p>
+                      <p className="text-[11px] text-ink-muted">
+                        {r.start_date}{r.end_date && r.end_date !== r.start_date ? ` → ${r.end_date}` : ""}
+                        {r.hours ? ` · ${r.hours}h` : ""}
+                      </p>
+                    </div>
+                    <StatusBadge status={r.status} />
+                  </li>
+                ))}
+              </ul>
+            );
+          })()}
         </Section>
       </div>
 
@@ -333,6 +374,135 @@ function ClockDial({ open, canClock, busy, onTap }: {
         <span className="text-[10.5px] font-semibold uppercase tracking-wide opacity-70">{sub}</span>
       </span>
     </button>
+  );
+}
+
+function WeekCard({ week, offset, busy, todayIso, onPrev, onNext, onJump }: {
+  week: WeekSummary; offset: number; busy: boolean; todayIso: string;
+  onPrev: () => void; onNext: () => void; onJump: (o: number) => void;
+}) {
+  const label = offset === 0 ? "This week" : offset === 1 ? "Last week" : `${offset} weeks ago`;
+  return (
+    <div className="rounded-3xl border border-hairline bg-surface-1 p-5 shadow-card">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-brand-deep">
+          <CalendarDays size={15} /> Attendance
+        </h2>
+        <div className="flex items-center gap-1.5">
+          <button onClick={onPrev} aria-label="Earlier week"
+            className="grid h-7 w-7 place-items-center rounded-full bg-surface-2 text-ink-muted transition hover:bg-surface-3">
+            <ChevronLeft size={15} />
+          </button>
+          <span className="min-w-[78px] text-center text-[12px] font-bold text-ink">{label}</span>
+          <button onClick={onNext} disabled={offset === 0} aria-label="Later week"
+            className="grid h-7 w-7 place-items-center rounded-full bg-surface-2 text-ink-muted transition hover:bg-surface-3 disabled:opacity-40">
+            <ChevronRight size={15} />
+          </button>
+        </div>
+      </div>
+      <div className="mb-3 flex gap-1.5">
+        {[0, 1, 2].map((o) => (
+          <button key={o} onClick={() => onJump(o)}
+            className={`rounded-full px-3 py-1 text-[11px] font-bold transition ${
+              offset === o ? "bg-brand text-white" : "bg-surface-2 text-ink-muted"}`}>
+            {o === 0 ? "This week" : o === 1 ? "Last week" : "2 wks ago"}
+          </button>
+        ))}
+      </div>
+      {busy || !week ? (
+        <div className="py-10 text-center"><Loader2 size={20} className="mx-auto animate-spin text-ink-subtle" /></div>
+      ) : (
+        <>
+          <p className="mb-2 text-[11px] font-semibold text-ink-subtle">{week.week_start} – {week.week_end}</p>
+          <div className="divide-y divide-hairline">
+            {week.days.map((d) => <WeekDayRow key={d.date} d={d} isToday={d.date === todayIso} />)}
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl bg-surface-2 px-3 py-2.5">
+            <Tot label="Worked" value={hrs(week.totals.worked_min)} strong />
+            {week.totals.ot_min > 0 && <Tot label="OT" value={hrs(week.totals.ot_min)} ok />}
+            {week.totals.restday_min > 0 && <Tot label="Rest-day" value={hrs(week.totals.restday_min)} ok />}
+            {week.totals.late_min > 0 && <Tot label="Late" value={`${week.totals.late_min}m`} warn />}
+            {week.totals.undertime_min > 0 && <Tot label="UT" value={`${week.totals.undertime_min}m`} warn />}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function WeekDayRow({ d, isToday }: { d: NonNullable<DaySummary>; isToday: boolean }) {
+  const wd = isoWeekday(d.date);
+  const worked = d.worked_min > 0;
+  return (
+    <div className="flex items-center gap-3 py-2.5">
+      <div className={`grid h-10 w-11 shrink-0 place-items-center rounded-xl ${
+        isToday ? "bg-brand-deep text-white" : worked ? "bg-brand-tint text-brand-deep" : "bg-surface-2 text-ink-subtle"}`}>
+        <span className="text-[9px] font-bold uppercase leading-none">{WD[wd]}</span>
+        <span className="mt-0.5 text-[13px] font-extrabold leading-none tabular-nums">{d.date.slice(8, 10)}</span>
+      </div>
+      <div className="min-w-0 flex-1">
+        {worked ? (
+          <>
+            <p className="text-[13px] font-bold text-ink">
+              {minToTime(d.first_in)} – {d.last_out != null ? minToTime(d.last_out) : "…"}
+            </p>
+            <div className="mt-1 flex flex-wrap gap-1">
+              {d.late_min > 0 && <MiniTag t={`${d.late_min}m late`} tone="warn" />}
+              {d.undertime_min > 0 && <MiniTag t={`${d.undertime_min}m UT`} tone="warn" />}
+              {d.ot_min > 0 && <MiniTag t={`${hrs(d.ot_min)} OT`} tone="ok" />}
+              {d.restday_min > 0 && <MiniTag t="rest-day" tone="ok" />}
+            </div>
+          </>
+        ) : (
+          <p className="text-[12px] text-ink-subtle">{d.dayoff ? "Day off" : "No record"}</p>
+        )}
+      </div>
+      {worked && <span className="text-[13px] font-extrabold tabular-nums text-ink">{hrs(d.worked_min)}</span>}
+    </div>
+  );
+}
+
+function MiniTag({ t, tone }: { t: string; tone: "warn" | "ok" }) {
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+      tone === "warn" ? "bg-red-50 text-red-600" : "bg-green-50 text-green-700"}`}>{t}</span>
+  );
+}
+
+function Tot({ label, value, strong, ok, warn }: {
+  label: string; value: string; strong?: boolean; ok?: boolean; warn?: boolean;
+}) {
+  const c = warn ? "text-red-600" : ok ? "text-green-700" : strong ? "text-brand-deep" : "text-ink";
+  return (
+    <span className="text-[12px]">
+      <span className="text-ink-muted">{label} </span>
+      <span className={`font-extrabold tabular-nums ${c}`}>{value}</span>
+    </span>
+  );
+}
+
+function LeaveCreditsCard({ credits }: { credits: LeaveCredit[] }) {
+  return (
+    <Section title="Leave credits" icon={Wallet}>
+      <div className="grid grid-cols-2 gap-2">
+        {credits.map((c) => (
+          <div key={c.id} className="rounded-2xl border border-hairline bg-surface-2 p-3">
+            <p className="truncate text-[12px] font-bold text-ink">{c.emoji ? c.emoji + " " : ""}{c.name}</p>
+            {c.annual_days == null ? (
+              <p className="mt-1 text-[17px] font-extrabold text-brand-deep">Unlimited</p>
+            ) : (
+              <>
+                <p className="mt-1 text-[18px] font-extrabold tabular-nums text-brand-deep">
+                  {c.remaining_days}
+                  <span className="text-[12px] font-bold text-ink-muted"> / {c.annual_days} left</span>
+                </p>
+                <p className="text-[11px] text-ink-muted">{c.used_days} used this year</p>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+    </Section>
   );
 }
 
