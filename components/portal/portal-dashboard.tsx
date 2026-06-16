@@ -226,7 +226,7 @@ export function PortalDashboard({
           {/* In · Out · Worked */}
           <div className="mt-6 grid grid-cols-3 overflow-hidden rounded-2xl bg-white/[0.06] ring-1 ring-white/10">
             <Stat dark label="In" value={summary?.first_in != null ? minToTime(summary.first_in) : "—"} />
-            <Stat dark label="Out" value={summary?.last_out != null ? minToTime(summary.last_out) : "—"} divider />
+            <Stat dark label="Out" value={open ? "In progress" : (summary?.last_out != null ? minToTime(summary.last_out) : "—")} divider />
             <Stat dark label="Worked" value={summary && summary.worked_min > 0 ? hrs(summary.worked_min) : "—"} divider strong />
           </div>
 
