@@ -105,7 +105,7 @@ export function PortalDashboard({
           ? { text: "Getting your location…", tone: "muted" }
           : !withinRadius
             ? { text: `You’re ~${Math.round(dist!)} m away — move within ${me.geo_radius_m} m of the store.`, tone: "warn" }
-            : { text: "You’re at the store · selfie required", tone: "ok" };
+            : { text: me.selfie_required ? "You’re at the store · selfie required" : "You’re at the store · tap the dial", tone: "ok" };
 
   async function doPunch(selfie: string) {
     setBusy(true);
@@ -179,7 +179,11 @@ export function PortalDashboard({
 
           <div className="mt-6 flex flex-col items-center">
             <ClockDial open={open} canClock={canClock} busy={busy}
-              onTap={() => { if (canClock) setShowSelfie(true); }} />
+              onTap={() => {
+                if (!canClock) return;
+                if (me.selfie_required) setShowSelfie(true);
+                else doPunch(""); // Pro: no selfie — punch straight away
+              }} />
             <div className="mt-5 flex flex-col items-center gap-2">
               <StatusPill open={open} clockedOut={summary?.last_out != null} dark />
               <p className={`flex items-center justify-center gap-1 px-4 text-center text-[12px] ${

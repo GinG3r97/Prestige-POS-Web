@@ -14,6 +14,7 @@ export type PortalMe = {
   geo_lat: number | null;
   geo_lng: number | null;
   geo_radius_m: number;
+  selfie_required: boolean;
 } | null;
 
 export type DaySummary = {
