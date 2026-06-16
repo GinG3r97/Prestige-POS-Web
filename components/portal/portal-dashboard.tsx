@@ -7,6 +7,7 @@ import {
   LogOut, Camera, RefreshCw, Loader2, Check, X, MapPin, Lock,
   CalendarDays, Clock3, TimerOff, Plane, Fingerprint, ClipboardList,
   Wallet, HeartPulse, Palmtree, Umbrella, Baby, Sparkles, ChevronDown,
+  ChevronLeft, ChevronRight,
 } from "lucide-react";
 import {
   punch, fileRequest, portalSignOut, getWeek,
@@ -24,6 +25,17 @@ function minToTime(min: number | null): string {
   return `${h12}:${m.toString().padStart(2, "0")} ${ampm}`;
 }
 const hrs = (min: number) => (min / 60).toFixed(min % 60 === 0 ? 0 : 1) + "h";
+
+function fmtMins(min: number): string {
+  const h = Math.floor(min / 60), m = min % 60;
+  return h > 0 ? (m > 0 ? `${h}h ${m}m` : `${h}h`) : `${m}m`;
+}
+function shortDate(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-US", {
+    weekday: "short", month: "short", day: "numeric", timeZone: "UTC",
+  });
+}
 
 // Deterministic (UTC) date helpers — safe across SSR/CSR (no hydration drift).
 function prettyDate(iso: string): string {
@@ -330,6 +342,7 @@ export function PortalDashboard({
           leaveTypes={leaveTypes}
           today={today}
           store={store}
+          week={weekData}
           onClose={() => setFileKind(null)}
           onFiled={(msg) => { setFileKind(null); setToast(msg); router.refresh(); }}
         />
@@ -649,8 +662,9 @@ function SelfieModal({ kind, busy, onCancel, onConfirm }: {
   );
 }
 
-function RequestModal({ kind, leaveTypes, today, store, onClose, onFiled }: {
-  kind: "leave" | "ot" | "undertime"; leaveTypes: LeaveType[]; today: string; store: string | null;
+function RequestModal({ kind, leaveTypes, today, store, week, onClose, onFiled }: {
+  kind: "leave" | "ot" | "undertime"; leaveTypes: LeaveType[]; today: string;
+  store: string | null; week: WeekSummary;
   onClose: () => void; onFiled: (msg: string) => void;
 }) {
   const [start, setStart] = useState(today);
@@ -664,6 +678,19 @@ function RequestModal({ kind, leaveTypes, today, store, onClose, onFiled }: {
   const titles = { leave: "File Leave", ot: "File Overtime", undertime: "File Undertime" };
   const subtitles = { leave: "Request time off", ot: "Log extra hours", undertime: "Leave early" };
   const Icon = kind === "leave" ? Plane : kind === "ot" ? Clock3 : TimerOff;
+
+  // Auto-detected from this week's punches vs. schedule: extra time worked
+  // (pending OT) or time left early (undertime). Tap one to pre-fill the form.
+  const detected = (kind === "ot" || kind === "undertime") && week
+    ? week.days
+        .map((d) => ({ date: d.date, mins: kind === "ot" ? d.ot_pending_min : d.undertime_min }))
+        .filter((x) => x.mins > 0)
+    : [];
+
+  function applyDetected(d: { date: string; mins: number }) {
+    setStart(d.date);
+    if (kind === "ot") setHours(String(+(d.mins / 60).toFixed(2)));
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -704,11 +731,31 @@ function RequestModal({ kind, leaveTypes, today, store, onClose, onFiled }: {
             <Field label="Type">
               <LeaveTypeSelect value={leaveType} onChange={setLeaveType} leaveTypes={leaveTypes} />
             </Field>
-            <div className="grid grid-cols-2 gap-2">
-              <Field label="From"><DateInput value={start} onChange={setStart} /></Field>
-              <Field label="To"><DateInput value={end} onChange={setEnd} /></Field>
-            </div>
+            <Field label="From"><DateInput value={start} onChange={setStart} /></Field>
+            <Field label="To"><DateInput value={end} onChange={setEnd} /></Field>
           </>
+        )}
+        {detected.length > 0 && (
+          <div className="rounded-2xl border border-brand-soft/50 bg-brand-tint/60 p-3">
+            <p className="mb-2 flex items-center gap-1.5 text-[12px] font-bold text-brand-deep">
+              <Sparkles size={13} /> We detected {kind === "ot" ? "overtime" : "undertime"} — tap to fill
+            </p>
+            <div className="space-y-1.5">
+              {detected.map((d) => {
+                const active = start === d.date;
+                return (
+                  <button key={d.date} type="button" onClick={() => applyDetected(d)}
+                    className={`flex w-full items-center justify-between rounded-xl border bg-surface-1 px-3 py-2.5 text-left transition ${
+                      active ? "border-brand ring-1 ring-brand" : "border-hairline hover:border-brand-soft"}`}>
+                    <span className="text-[13px] font-bold text-ink">{shortDate(d.date)}</span>
+                    <span className="rounded-full bg-brand px-2.5 py-0.5 text-[11px] font-bold text-white">
+                      {fmtMins(d.mins)} {kind === "ot" ? "over" : "short"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         )}
         {kind !== "leave" && <Field label="Date"><DateInput value={start} onChange={setStart} /></Field>}
         {kind === "ot" && (
@@ -796,10 +843,87 @@ function LeaveTypeSelect({ value, onChange, leaveTypes }: {
   );
 }
 
+const DOW = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+
 function DateInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const [vy, vm, vd] = (value || "").split("-").map(Number);
+  const [viewY, setViewY] = useState(vy || new Date().getFullYear());
+  const [viewM, setViewM] = useState((vm || new Date().getMonth() + 1) - 1); // 0-based
+
+  useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
+  const now = new Date();
+  const tY = now.getFullYear(), tM = now.getMonth(), tD = now.getDate();
+  const startDow = new Date(viewY, viewM, 1).getDay();
+  const daysIn = new Date(viewY, viewM + 1, 0).getDate();
+  const monthLabel = new Date(viewY, viewM, 1)
+    .toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  const display = value && vy
+    ? new Date(vy, vm - 1, vd).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })
+    : "Pick a date";
+
+  function shift(delta: number) {
+    let m = viewM + delta, y = viewY;
+    if (m < 0) { m = 11; y--; } else if (m > 11) { m = 0; y++; }
+    setViewM(m); setViewY(y);
+  }
+  function pick(d: number) {
+    onChange(`${viewY}-${String(viewM + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`);
+    setOpen(false);
+  }
+
   return (
-    <input type="date" value={value} onChange={(e) => onChange(e.target.value)}
-      className="w-full rounded-xl border-2 border-hairline bg-surface-2 px-3 py-2.5 text-sm text-ink outline-none focus:border-brand" />
+    <div ref={ref} className="relative">
+      <button type="button" onClick={() => setOpen((o) => !o)}
+        className={`flex w-full items-center gap-2 rounded-xl border-2 bg-surface-2 px-3 py-2.5 text-left transition ${
+          open ? "border-brand" : "border-hairline"}`}>
+        <CalendarDays size={15} className="shrink-0 text-brand-deep" />
+        <span className="min-w-0 flex-1 truncate text-[13px] font-semibold text-ink">{display}</span>
+        <ChevronDown size={15} className={`shrink-0 text-ink-muted transition ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="absolute z-40 mt-1.5 w-[256px] max-w-[80vw] rounded-2xl border border-hairline bg-surface-1 p-3 shadow-card">
+          <div className="mb-2 flex items-center justify-between">
+            <button type="button" onClick={() => shift(-1)} aria-label="Previous month"
+              className="grid h-7 w-7 place-items-center rounded-full text-ink-muted transition hover:bg-surface-2">
+              <ChevronLeft size={16} />
+            </button>
+            <span className="text-[13px] font-bold text-ink">{monthLabel}</span>
+            <button type="button" onClick={() => shift(1)} aria-label="Next month"
+              className="grid h-7 w-7 place-items-center rounded-full text-ink-muted transition hover:bg-surface-2">
+              <ChevronRight size={16} />
+            </button>
+          </div>
+          <div className="grid grid-cols-7 gap-0.5">
+            {DOW.map((d) => (
+              <div key={d} className="py-1 text-center text-[10px] font-bold text-ink-subtle">{d}</div>
+            ))}
+            {Array.from({ length: startDow }).map((_, i) => <div key={`b${i}`} />)}
+            {Array.from({ length: daysIn }, (_, i) => i + 1).map((d) => {
+              const isSel = vy === viewY && vm - 1 === viewM && vd === d;
+              const isToday = tY === viewY && tM === viewM && tD === d;
+              return (
+                <button key={d} type="button" onClick={() => pick(d)}
+                  className={`mx-auto grid h-8 w-8 place-items-center rounded-full text-[12px] font-semibold transition ${
+                    isSel ? "bg-brand text-white"
+                    : isToday ? "bg-brand-tint text-brand-deep"
+                    : "text-ink hover:bg-surface-2"}`}>
+                  {d}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
