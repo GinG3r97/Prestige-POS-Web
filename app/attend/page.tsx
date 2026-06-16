@@ -97,24 +97,24 @@ function Attend() {
   }
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-surface-2 px-5 py-8">
+    <main className="flex min-h-dvh items-center justify-center bg-brand-deep px-5 py-8">
       <div className="w-full max-w-sm">
         <div className="mb-5 flex flex-col items-center text-center">
           <Image
             src="/app_icon.png"
             alt="Prestige POS"
-            width={48}
-            height={48}
+            width={52}
+            height={52}
             priority
-            className="h-12 w-12 rounded-xl shadow-card ring-1 ring-black/5"
+            className="h-[52px] w-[52px] rounded-2xl shadow-card ring-1 ring-white/15"
           />
-          <h1 className="mt-3 text-xl font-bold tracking-tight text-ink">
+          <h1 className="mt-3 text-xl font-bold tracking-tight text-white">
             {roster?.business_name ?? "Time Clock"}
           </h1>
-          <p className="text-[12px] text-ink-muted">Staff time clock</p>
+          <p className="text-[12px] text-brand-soft">Staff time clock</p>
         </div>
 
-        <div className="rounded-3xl border border-hairline bg-surface-1 p-5 shadow-card">
+        <div className="rounded-3xl bg-surface-1 p-5 shadow-[0_30px_70px_-20px_rgba(0,0,0,0.55)]">
           {step === "loading" && (
             <div className="flex justify-center py-12">
               <Loader2 className="animate-spin text-brand" />
@@ -247,7 +247,7 @@ function Attend() {
           )}
         </div>
 
-        <p className="mt-4 text-center text-[11px] text-ink-subtle">
+        <p className="mt-4 text-center text-[11px] text-brand-soft/70">
           Prestige POS · Verified time clock
         </p>
       </div>

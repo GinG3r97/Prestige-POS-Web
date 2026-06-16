@@ -51,7 +51,7 @@ export default function PortalLoginPage() {
     <main className="flex min-h-dvh items-center justify-center bg-brand-deep px-5 py-10">
       <div className="w-full max-w-sm">
         <div className="mb-6 flex flex-col items-center text-center">
-          <Image src="/app_icon.png" alt="" width={52} height={52} priority className="h-13 w-13 rounded-2xl shadow-card ring-1 ring-white/10" />
+          <Image src="/app_icon.png" alt="" width={52} height={52} priority className="h-[52px] w-[52px] rounded-2xl shadow-card ring-1 ring-white/10" />
           <h1 className="mt-4 text-2xl font-bold tracking-tight text-white">Staff Portal</h1>
           <p className="mt-1 text-sm text-brand-soft">
             {step === "email" ? "Sign in with your work email." : "Enter the 6-digit code we emailed you."}
