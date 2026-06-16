@@ -485,29 +485,34 @@ function leaveIcon(name: string) {
 function LeaveCreditsCard({ credits }: { credits: LeaveCredit[] }) {
   return (
     <Section title="Leave credits" icon={Wallet}>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="space-y-2">
         {credits.map((c) => {
           const Icon = leaveIcon(c.name);
           return (
-          <div key={c.id} className="rounded-2xl border border-hairline bg-surface-2 p-3">
-            <div className="flex items-center gap-2">
-              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-brand-tint text-brand-deep">
-                <Icon size={15} />
+            <div key={c.id} className="flex items-center gap-3 rounded-2xl border border-hairline bg-surface-2 p-3">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand-tint text-brand-deep">
+                <Icon size={17} />
               </span>
-              <p className="truncate text-[12px] font-bold text-ink">{c.name}</p>
-            </div>
-            {c.annual_days == null ? (
-              <p className="mt-1 text-[17px] font-extrabold text-brand-deep">Unlimited</p>
-            ) : (
-              <>
-                <p className="mt-1 text-[18px] font-extrabold tabular-nums text-brand-deep">
-                  {c.remaining_days}
-                  <span className="text-[12px] font-bold text-ink-muted"> / {c.annual_days} left</span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[13px] font-bold text-ink">{c.name}{c.paid ? "" : ""}</p>
+                <p className="text-[11px] text-ink-muted">
+                  {c.annual_days == null ? "No annual limit" : `${c.used_days} used this year`}
                 </p>
-                <p className="text-[11px] text-ink-muted">{c.used_days} used this year</p>
-              </>
-            )}
-          </div>
+              </div>
+              <div className="shrink-0 text-right">
+                {c.annual_days == null ? (
+                  <p className="text-[15px] font-extrabold text-brand-deep">Unlimited</p>
+                ) : (
+                  <>
+                    <p className="text-[18px] font-extrabold leading-none tabular-nums text-brand-deep">
+                      {c.remaining_days}
+                      <span className="text-[12px] font-bold text-ink-muted"> / {c.annual_days}</span>
+                    </p>
+                    <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wide text-ink-subtle">days left</p>
+                  </>
+                )}
+              </div>
+            </div>
           );
         })}
       </div>
