@@ -35,12 +35,19 @@ export async function middleware(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
   const isAdminLogin = path === "/admin/login";
+  const isPortalLogin = path === "/portal/login";
   const isProtected =
-    (path.startsWith("/admin") && !isAdminLogin) || path.startsWith("/app");
+    (path.startsWith("/admin") && !isAdminLogin) ||
+    path.startsWith("/app") ||
+    (path.startsWith("/portal") && !isPortalLogin);
 
   if (isProtected && !user) {
     const url = request.nextUrl.clone();
-    url.pathname = path.startsWith("/admin") ? "/admin/login" : "/login";
+    url.pathname = path.startsWith("/admin")
+      ? "/admin/login"
+      : path.startsWith("/portal")
+        ? "/portal/login"
+        : "/login";
     url.searchParams.set("next", path);
     return NextResponse.redirect(url);
   }
@@ -49,5 +56,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/app/:path*"],
+  matcher: ["/admin/:path*", "/app/:path*", "/portal/:path*"],
 };
