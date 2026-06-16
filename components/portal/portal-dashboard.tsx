@@ -4,8 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
-  LogOut, Camera, RefreshCw, Loader2, Check, X, MapPin,
-  CalendarDays, Clock3, TimerOff, Plane,
+  LogOut, Camera, RefreshCw, Loader2, Check, X, MapPin, Lock,
+  CalendarDays, Clock3, TimerOff, Plane, Fingerprint, ClipboardList,
 } from "lucide-react";
 import {
   punch, fileRequest, portalSignOut,
@@ -23,6 +23,29 @@ function minToTime(min: number | null): string {
 }
 const hrs = (min: number) => (min / 60).toFixed(min % 60 === 0 ? 0 : 1) + "h";
 
+// Deterministic (UTC) date helpers — safe across SSR/CSR (no hydration drift).
+function prettyDate(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-US", {
+    weekday: "long", month: "long", day: "numeric", timeZone: "UTC",
+  });
+}
+function isoWeekday(iso: string): number {
+  const [y, m, d] = iso.split("-").map(Number);
+  const wd = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+  return wd === 0 ? 7 : wd; // 1=Mon … 7=Sun
+}
+
+// Great-circle distance in metres — mirrors the server-side geofence check so
+// we can disable the clock button before a punch the server would reject.
+function distanceM(aLat: number, aLng: number, bLat: number, bLng: number): number {
+  const R = 6371000, toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(bLat - aLat), dLng = toRad(bLng - aLng);
+  const s = Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+
 export function PortalDashboard({
   me, today, summary, open, requests, leaveTypes,
 }: {
@@ -39,17 +62,49 @@ export function PortalDashboard({
   const [fileKind, setFileKind] = useState<"leave" | "ot" | "undertime" | null>(null);
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [now, setNow] = useState<Date | null>(null);
+  const [locDenied, setLocDenied] = useState(false);
 
   useEffect(() => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      (p) => setCoords({ lat: p.coords.latitude, lng: p.coords.longitude }),
-      () => {},
-      { enableHighAccuracy: true, timeout: 10000 },
+    if (!navigator.geolocation) { setLocDenied(true); return; }
+    const id = navigator.geolocation.watchPosition(
+      (p) => { setCoords({ lat: p.coords.latitude, lng: p.coords.longitude }); setLocDenied(false); },
+      () => setLocDenied(true),
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 15000 },
     );
+    return () => navigator.geolocation.clearWatch(id);
+  }, []);
+
+  // Live wall-clock for the hero card (client-only → init null to avoid drift).
+  useEffect(() => {
+    setNow(new Date());
+    const t = setInterval(() => setNow(new Date()), 15000);
+    return () => clearInterval(t);
   }, []);
 
   const first = me.name.split(" ")[0];
+  const todayWd = isoWeekday(today);
+
+  // Geofence gate — the store must have a location set, the employee must share
+  // theirs, and they must be inside the radius. Disables the button otherwise
+  // (the server enforces the same rule; this is the friendly front line).
+  const storeHasGeofence = me.geofenced && me.geo_lat != null && me.geo_lng != null;
+  const dist = storeHasGeofence && coords
+    ? distanceM(coords.lat, coords.lng, me.geo_lat!, me.geo_lng!)
+    : null;
+  const withinRadius = dist != null && dist <= me.geo_radius_m;
+  const canClock = !busy && storeHasGeofence && coords != null && withinRadius;
+
+  const gateReason: { text: string; tone: "warn" | "muted" | "ok" } =
+    !storeHasGeofence
+      ? { text: "Store location isn’t set yet — ask your manager to set it in the app.", tone: "warn" }
+      : locDenied
+        ? { text: "Turn on location to clock in.", tone: "warn" }
+        : !coords
+          ? { text: "Getting your location…", tone: "muted" }
+          : !withinRadius
+            ? { text: `You’re ~${Math.round(dist!)} m away — move within ${me.geo_radius_m} m of the store.`, tone: "warn" }
+            : { text: "You’re at the store · selfie required", tone: "ok" };
 
   async function doPunch(selfie: string) {
     setBusy(true);
@@ -82,75 +137,83 @@ export function PortalDashboard({
 
   return (
     <main className="min-h-dvh bg-surface-2">
-      {/* Header */}
-      <header className="bg-brand-deep px-5 pb-6 pt-7 text-white">
-        <div className="mx-auto flex max-w-md items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Image src="/app_icon.png" alt="" width={40} height={40} className="h-10 w-10 rounded-xl ring-1 ring-white/15" />
-            <div>
-              <p className="text-[12px] text-brand-soft">Hi, {first} 👋</p>
-              <p className="text-[15px] font-bold">Staff Portal</p>
+      {/* Sticky top bar */}
+      <header className="sticky top-0 z-30 border-b border-white/5 bg-ink/90 backdrop-blur-md">
+        <div className="mx-auto flex max-w-md items-center justify-between px-4 py-3 text-white">
+          <div className="flex items-center gap-2.5">
+            <Image src="/app_icon.png" alt="" width={36} height={36} className="h-9 w-9 rounded-xl ring-1 ring-white/15" />
+            <div className="leading-tight">
+              <p className="text-[14px] font-bold">Hi, {first}</p>
+              <p className="text-[11px] text-white/55">{prettyDate(today)}</p>
             </div>
           </div>
           <form action={portalSignOut}>
-            <button className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-[12px] font-semibold">
-              <LogOut size={13} /> Sign out
+            <button aria-label="Sign out" className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white/80 ring-1 ring-white/15 transition hover:bg-white/20">
+              <LogOut size={16} />
             </button>
           </form>
         </div>
       </header>
 
-      <div className="mx-auto -mt-3 max-w-md space-y-4 px-4 pb-12">
-        {/* Clock card */}
-        <div className="rounded-3xl border border-hairline bg-surface-1 p-5 shadow-card">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-[12px] font-bold uppercase tracking-wide text-ink-muted">Today</p>
-              <p className="text-[15px] font-bold text-ink">
-                {open ? "Clocked in" : summary?.last_out != null ? "Clocked out" : "Not clocked in"}
+      {/* Clock hero — tap the dial to punch */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-ink to-brand-deep px-5 pb-9 pt-6 text-white">
+        <div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-brand/25 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -left-16 h-52 w-52 rounded-full bg-brand-deep/60 blur-3xl" />
+
+        <div className="relative mx-auto max-w-md">
+          <div className="text-center">
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/45">Local time</p>
+            <p className="mt-0.5 whitespace-nowrap text-[34px] font-extrabold leading-none tracking-tight tabular-nums">
+              {now ? now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "—:—"}
+            </p>
+          </div>
+
+          <div className="mt-6 flex flex-col items-center">
+            <ClockDial open={open} canClock={canClock} busy={busy}
+              onTap={() => { if (canClock) setShowSelfie(true); }} />
+            <div className="mt-5 flex flex-col items-center gap-2">
+              <StatusPill open={open} clockedOut={summary?.last_out != null} dark />
+              <p className={`flex items-center justify-center gap-1 px-4 text-center text-[12px] ${
+                gateReason.tone === "warn" ? "text-red-300"
+                : gateReason.tone === "ok" ? "text-green-300"
+                : "text-white/55"}`}>
+                <MapPin size={12} className="shrink-0" /> {gateReason.text}
               </p>
             </div>
-            {summary && (summary.first_in != null) && (
-              <div className="text-right text-[12px] text-ink-muted">
-                <p>In {minToTime(summary.first_in)}</p>
-                {summary.last_out != null && <p>Out {minToTime(summary.last_out)}</p>}
-                {summary.worked_min > 0 && <p className="font-bold text-ink">{hrs(summary.worked_min)}</p>}
-              </div>
-            )}
+          </div>
+
+          {/* In · Out · Worked */}
+          <div className="mt-6 grid grid-cols-3 overflow-hidden rounded-2xl bg-white/[0.06] ring-1 ring-white/10">
+            <Stat dark label="In" value={summary?.first_in != null ? minToTime(summary.first_in) : "—"} />
+            <Stat dark label="Out" value={summary?.last_out != null ? minToTime(summary.last_out) : "—"} divider />
+            <Stat dark label="Worked" value={summary && summary.worked_min > 0 ? hrs(summary.worked_min) : "—"} divider strong />
           </div>
 
           {flags.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-1.5">
+            <div className="mt-3 flex flex-wrap justify-center gap-1.5">
               {flags.map((f, i) => (
-                <span key={i}
-                  className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${
-                    f.tone === "warn" ? "bg-red-50 text-red-600"
-                    : f.tone === "ok" ? "bg-green-50 text-green-700"
-                    : "bg-brand-tint text-brand-deep"}`}>
+                <span key={i} className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${
+                  f.tone === "warn" ? "bg-red-400/15 text-red-300"
+                  : f.tone === "ok" ? "bg-green-400/15 text-green-300"
+                  : "bg-white/10 text-brand-soft"}`}>
                   {f.label}
                 </span>
               ))}
             </div>
           )}
-
-          <button
-            onClick={() => setShowSelfie(true)}
-            className={`mt-4 flex w-full items-center justify-center gap-2 rounded-full px-6 py-4 text-base font-bold text-white shadow-card transition ${
-              open ? "bg-brand-deep hover:bg-ink" : "bg-green-600 hover:bg-green-700"}`}>
-            <Camera size={18} /> Clock {open ? "out" : "in"}
-          </button>
-          {me.geofenced && (
-            <p className="mt-2 flex items-center justify-center gap-1 text-[11px] text-ink-subtle">
-              <MapPin size={11} /> {coords ? "Location ready" : "Getting location…"} · selfie required
-            </p>
-          )}
         </div>
+      </section>
 
+      {/* Content sheet */}
+      <div className="mx-auto -mt-4 max-w-md space-y-4 rounded-t-[28px] bg-surface-2 px-4 pb-14 pt-5">
         {/* Quick actions */}
-        <div className="grid grid-cols-3 gap-2">
-          <ActionBtn icon={Plane} label="Leave" onClick={() => setFileKind("leave")} />
-          <ActionBtn icon={Clock3} label="Overtime" onClick={() => setFileKind("ot")} />
-          <ActionBtn icon={TimerOff} label="Undertime" onClick={() => setFileKind("undertime")} />
+        <div>
+          <p className="mb-2 px-1 text-[12px] font-bold uppercase tracking-wide text-ink-muted">File a request</p>
+          <div className="grid grid-cols-3 gap-2.5">
+            <ActionBtn icon={Plane} label="Leave" onClick={() => setFileKind("leave")} />
+            <ActionBtn icon={Clock3} label="Overtime" onClick={() => setFileKind("ot")} />
+            <ActionBtn icon={TimerOff} label="Undertime" onClick={() => setFileKind("undertime")} />
+          </div>
         </div>
 
         {/* Schedule */}
@@ -158,10 +221,16 @@ export function PortalDashboard({
           <div className="grid grid-cols-7 gap-1.5">
             {[1, 2, 3, 4, 5, 6, 7].map((d) => {
               const s = me.schedule?.find((x) => x.weekday === d);
+              const isToday = d === todayWd;
               return (
-                <div key={d} className={`rounded-lg py-2 text-center ${s ? "bg-brand-tint" : "bg-surface-2"}`}>
-                  <p className="text-[10px] font-bold text-ink-muted">{WD[d]}</p>
-                  <p className={`text-[9px] ${s ? "text-brand-deep" : "text-ink-subtle"}`}>
+                <div key={d}
+                  className={`rounded-lg py-2 text-center transition ${
+                    isToday ? "bg-brand-deep text-white shadow-card ring-2 ring-brand-deep"
+                    : s ? "bg-brand-tint"
+                    : "bg-surface-2"}`}>
+                  <p className={`text-[10px] font-bold ${isToday ? "text-white" : "text-ink-muted"}`}>{WD[d]}</p>
+                  <p className={`text-[9px] ${
+                    isToday ? "text-white/85" : s ? "text-brand-deep" : "text-ink-subtle"}`}>
                     {s ? s.start : "off"}
                   </p>
                 </div>
@@ -171,7 +240,7 @@ export function PortalDashboard({
         </Section>
 
         {/* Requests */}
-        <Section title="My requests" icon={CalendarDays}>
+        <Section title="My requests" icon={ClipboardList}>
           {requests.length === 0 ? (
             <p className="text-[13px] text-ink-subtle">Nothing filed yet.</p>
           ) : (
@@ -217,13 +286,78 @@ export function PortalDashboard({
   );
 }
 
-function ActionBtn({ icon: Icon, label, onClick }: { icon: typeof Plane; label: string; onClick: () => void }) {
+function ClockDial({ open, canClock, busy, onTap }: {
+  open: boolean; canClock: boolean; busy: boolean; onTap: () => void;
+}) {
+  const label = open ? "OUT" : "IN";
+  const innerBg = !canClock
+    ? "from-white/10 to-white/[0.04]"
+    : open ? "from-white to-stone-200" : "from-green-400 to-green-600";
+  const innerText = !canClock ? "text-white/45" : open ? "text-ink" : "text-white";
+  const pingClr = open ? "bg-white/15" : "bg-green-400/25";
+  const sub = busy ? "Saving…" : !canClock ? "Locked" : open ? "Tap to end shift" : "Tap to start shift";
+
+  return (
+    <button
+      type="button"
+      onClick={onTap}
+      disabled={!canClock || busy}
+      aria-label={`Clock ${label.toLowerCase()}`}
+      className="group relative grid h-56 w-56 place-items-center rounded-full outline-none disabled:cursor-not-allowed"
+    >
+      {canClock && !busy && (
+        <span className={`absolute inset-4 animate-ping rounded-full ${pingClr}`} style={{ animationDuration: "2.2s" }} />
+      )}
+      <span className="absolute inset-1 rounded-full ring-1 ring-white/15" />
+      <span className="absolute inset-[14px] rounded-full ring-1 ring-white/10" />
+      <span className={`absolute inset-6 rounded-full bg-gradient-to-b ${innerBg} shadow-2xl transition duration-150 group-active:scale-[0.96]`} />
+      <span className={`relative flex flex-col items-center gap-1.5 ${innerText}`}>
+        {busy ? <Loader2 className="animate-spin" size={34} />
+          : canClock ? <Fingerprint size={40} strokeWidth={1.8} />
+          : <Lock size={30} />}
+        <span className="text-[20px] font-extrabold leading-none tracking-wide">CLOCK {label}</span>
+        <span className="text-[10.5px] font-semibold uppercase tracking-wide opacity-70">{sub}</span>
+      </span>
+    </button>
+  );
+}
+
+function ActionBtn({ icon: Icon, label, onClick }: {
+  icon: typeof Plane; label: string; onClick: () => void;
+}) {
   return (
     <button onClick={onClick}
-      className="flex flex-col items-center gap-1.5 rounded-2xl border border-hairline bg-surface-1 py-3.5 shadow-card transition hover:border-brand-soft">
+      className="flex flex-col items-center gap-1.5 rounded-2xl border border-hairline bg-surface-1 py-3.5 shadow-card transition hover:-translate-y-0.5 hover:border-brand-soft hover:shadow-lg">
       <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand-tint text-brand-deep"><Icon size={17} /></span>
       <span className="text-[12px] font-bold text-ink">{label}</span>
     </button>
+  );
+}
+
+function StatusPill({ open, clockedOut, dark }: { open: boolean; clockedOut: boolean; dark?: boolean }) {
+  const cfg = open
+    ? { label: "On the clock", dot: "bg-green-400", cls: dark ? "bg-green-400/15 text-green-300" : "bg-green-50 text-green-700" }
+    : clockedOut
+      ? { label: "Clocked out", dot: dark ? "bg-white/45" : "bg-ink-subtle", cls: dark ? "bg-white/10 text-white/70" : "bg-surface-2 text-ink-muted" }
+      : { label: "Not clocked in", dot: "bg-amber-400", cls: dark ? "bg-amber-400/15 text-amber-300" : "bg-amber-50 text-amber-700" };
+  return (
+    <span className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold ${cfg.cls}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot} ${open ? "animate-pulse" : ""}`} />
+      {cfg.label}
+    </span>
+  );
+}
+
+function Stat({ label, value, divider, strong, dark }: {
+  label: string; value: string; divider?: boolean; strong?: boolean; dark?: boolean;
+}) {
+  return (
+    <div className={`px-2 py-2.5 text-center ${divider ? (dark ? "border-l border-white/10" : "border-l border-hairline") : ""}`}>
+      <p className={`text-[10px] font-bold uppercase tracking-wide ${dark ? "text-white/50" : "text-ink-muted"}`}>{label}</p>
+      <p className={`mt-0.5 text-[14px] tabular-nums ${
+        strong ? (dark ? "font-extrabold text-brand-soft" : "font-extrabold text-brand-deep")
+        : (dark ? "font-bold text-white" : "font-bold text-ink")}`}>{value}</p>
+    </div>
   );
 }
 

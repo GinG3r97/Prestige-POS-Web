@@ -11,6 +11,9 @@ export type PortalMe = {
   schedule: ScheduleEntry[] | null;
   store_code: string | null;
   geofenced: boolean;
+  geo_lat: number | null;
+  geo_lng: number | null;
+  geo_radius_m: number;
 } | null;
 
 export type DaySummary = {
