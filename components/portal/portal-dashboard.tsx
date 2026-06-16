@@ -6,7 +6,7 @@ import Image from "next/image";
 import {
   LogOut, Camera, RefreshCw, Loader2, Check, X, MapPin, Lock,
   CalendarDays, Clock3, TimerOff, Plane, Fingerprint, ClipboardList,
-  Wallet, HeartPulse, Palmtree, Umbrella, Baby, Sparkles,
+  Wallet, HeartPulse, Palmtree, Umbrella, Baby, Sparkles, ChevronDown,
 } from "lucide-react";
 import {
   punch, fileRequest, portalSignOut, getWeek,
@@ -702,11 +702,7 @@ function RequestModal({ kind, leaveTypes, today, store, onClose, onFiled }: {
         {kind === "leave" && (
           <>
             <Field label="Type">
-              <select value={leaveType} onChange={(e) => setLeaveType(e.target.value)}
-                className="w-full rounded-xl border-2 border-hairline bg-surface-2 px-3 py-2.5 text-sm text-ink outline-none focus:border-brand">
-                {leaveTypes.length === 0 && <option value="">General leave</option>}
-                {leaveTypes.map((lt) => <option key={lt.id} value={lt.id}>{lt.emoji ? lt.emoji + " " : ""}{lt.name}{lt.paid ? " (paid)" : ""}</option>)}
-              </select>
+              <LeaveTypeSelect value={leaveType} onChange={setLeaveType} leaveTypes={leaveTypes} />
             </Field>
             <div className="grid grid-cols-2 gap-2">
               <Field label="From"><DateInput value={start} onChange={setStart} /></Field>
@@ -733,6 +729,69 @@ function RequestModal({ kind, leaveTypes, today, store, onClose, onFiled }: {
           {busy ? <Loader2 size={16} className="animate-spin" /> : <><Check size={16} /> Submit request</>}
         </button>
       </form>
+    </div>
+  );
+}
+
+function LeaveTypeSelect({ value, onChange, leaveTypes }: {
+  value: string; onChange: (v: string) => void; leaveTypes: LeaveType[];
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const selected = leaveTypes.find((lt) => lt.id === value) ?? leaveTypes[0] ?? null;
+
+  useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
+  const SelIcon = selected ? leaveIcon(selected.name) : CalendarDays;
+  return (
+    <div ref={ref} className="relative">
+      <button type="button" onClick={() => setOpen((o) => !o)}
+        className={`flex w-full items-center gap-2.5 rounded-xl border-2 bg-surface-2 px-3 py-2.5 text-left transition ${
+          open ? "border-brand" : "border-hairline"}`}>
+        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-brand-tint text-brand-deep">
+          <SelIcon size={15} />
+        </span>
+        <span className="min-w-0 flex-1 truncate text-sm font-semibold text-ink">
+          {selected?.name ?? "General leave"}
+        </span>
+        {selected?.paid && (
+          <span className="shrink-0 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-bold text-green-700">PAID</span>
+        )}
+        <ChevronDown size={16} className={`shrink-0 text-ink-muted transition ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="absolute z-30 mt-1.5 max-h-60 w-full overflow-auto rounded-xl border border-hairline bg-surface-1 p-1 shadow-card">
+          {leaveTypes.length === 0 && (
+            <div className="px-3 py-2 text-sm text-ink-muted">General leave</div>
+          )}
+          {leaveTypes.map((lt) => {
+            const Icon = leaveIcon(lt.name);
+            const sel = lt.id === value;
+            return (
+              <button key={lt.id} type="button"
+                onClick={() => { onChange(lt.id); setOpen(false); }}
+                className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition ${
+                  sel ? "bg-brand-tint" : "hover:bg-surface-2"}`}>
+                <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg ${
+                  sel ? "bg-brand text-white" : "bg-surface-2 text-brand-deep"}`}>
+                  <Icon size={15} />
+                </span>
+                <span className="min-w-0 flex-1 truncate text-[13px] font-semibold text-ink">{lt.name}</span>
+                {lt.paid && (
+                  <span className="shrink-0 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-bold text-green-700">PAID</span>
+                )}
+                {sel && <Check size={15} className="shrink-0 text-brand-deep" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
