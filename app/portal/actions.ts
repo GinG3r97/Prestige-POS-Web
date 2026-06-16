@@ -46,33 +46,36 @@ export type PortalRequest = {
 
 export type LeaveType = { id: string; name: string; paid: boolean; emoji?: string };
 
-export async function getMe(): Promise<PortalMe> {
+// Every portal RPC takes the store code from the QR's ?store=. It checks the
+// signed-in email is an employee AT THAT store — it never widens access, so
+// it's safe to pass straight from the URL. (No store picker: the URL decides.)
+export async function getMe(store?: string | null): Promise<PortalMe> {
   const supa = createClient();
-  const { data } = await supa.rpc("portal_me");
+  const { data } = await supa.rpc("portal_me", { p_store: store ?? null });
   return (data as PortalMe) ?? null;
 }
 
-export async function getToday(date: string): Promise<DaySummary> {
+export async function getToday(date: string, store?: string | null): Promise<DaySummary> {
   const supa = createClient();
-  const { data } = await supa.rpc("portal_my_summary", { p_date: date });
+  const { data } = await supa.rpc("portal_my_summary", { p_date: date, p_store: store ?? null });
   return (data as DaySummary) ?? null;
 }
 
-export async function getClockOpen(): Promise<boolean> {
+export async function getClockOpen(store?: string | null): Promise<boolean> {
   const supa = createClient();
-  const { data } = await supa.rpc("portal_clock_open");
+  const { data } = await supa.rpc("portal_clock_open", { p_store: store ?? null });
   return data === true;
 }
 
-export async function getRequests(): Promise<PortalRequest[]> {
+export async function getRequests(store?: string | null): Promise<PortalRequest[]> {
   const supa = createClient();
-  const { data } = await supa.rpc("portal_my_requests");
+  const { data } = await supa.rpc("portal_my_requests", { p_store: store ?? null });
   return (data ?? []) as PortalRequest[];
 }
 
-export async function getLeaveTypes(): Promise<LeaveType[]> {
+export async function getLeaveTypes(store?: string | null): Promise<LeaveType[]> {
   const supa = createClient();
-  const { data } = await supa.rpc("portal_leave_types");
+  const { data } = await supa.rpc("portal_leave_types", { p_store: store ?? null });
   return (data ?? []) as LeaveType[];
 }
 
@@ -82,6 +85,7 @@ export async function punch(input: {
   lng: number | null;
   selfie: string;
   device: string;
+  store?: string | null;
 }): Promise<{ ok: boolean; result?: { kind: string; at: string }; error?: string }> {
   const supa = createClient();
   const { data, error } = await supa.rpc("portal_punch", {
@@ -90,6 +94,7 @@ export async function punch(input: {
     p_lng: input.lng,
     p_selfie: input.selfie,
     p_device: input.device,
+    p_store: input.store ?? null,
   });
   if (error) return { ok: false, error: mapPunchErr(error.message) };
   return { ok: true, result: data };
@@ -102,6 +107,7 @@ export async function fileRequest(input: {
   leaveType: string | null;
   hours: number | null;
   reason: string;
+  store?: string | null;
 }): Promise<{ ok: boolean; error?: string }> {
   const supa = createClient();
   const { error } = await supa.rpc("file_request", {
@@ -111,6 +117,7 @@ export async function fileRequest(input: {
     p_leave_type: input.leaveType,
     p_hours: input.hours,
     p_reason: input.reason,
+    p_store: input.store ?? null,
   });
   if (error) return { ok: false, error: error.message };
   return { ok: true };

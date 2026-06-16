@@ -47,7 +47,7 @@ function distanceM(aLat: number, aLng: number, bLat: number, bLng: number): numb
 }
 
 export function PortalDashboard({
-  me, today, summary, open, requests, leaveTypes,
+  me, today, summary, open, requests, leaveTypes, store,
 }: {
   me: NonNullable<PortalMe>;
   today: string;
@@ -55,6 +55,7 @@ export function PortalDashboard({
   open: boolean;
   requests: PortalRequest[];
   leaveTypes: LeaveType[];
+  store: string | null;
 }) {
   const router = useRouter();
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
@@ -114,6 +115,7 @@ export function PortalDashboard({
       lng: coords?.lng ?? null,
       selfie,
       device: navigator.userAgent.slice(0, 120),
+      store,
     });
     setBusy(false);
     setShowSelfie(false);
@@ -161,6 +163,13 @@ export function PortalDashboard({
         <div className="pointer-events-none absolute -bottom-24 -left-16 h-52 w-52 rounded-full bg-brand-deep/60 blur-3xl" />
 
         <div className="relative mx-auto max-w-md">
+          {/* Which store this portal is scoped to (from the QR — read-only) */}
+          {me.store_code && (
+            <p className="mb-4 text-center text-[11px] font-bold uppercase tracking-[0.18em] text-white/40">
+              Store {me.store_code}
+            </p>
+          )}
+
           <div className="text-center">
             <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/45">Local time</p>
             <p className="mt-0.5 whitespace-nowrap text-[34px] font-extrabold leading-none tracking-tight tabular-nums">
@@ -277,6 +286,7 @@ export function PortalDashboard({
           kind={fileKind}
           leaveTypes={leaveTypes}
           today={today}
+          store={store}
           onClose={() => setFileKind(null)}
           onFiled={(msg) => { setFileKind(null); setToast(msg); router.refresh(); }}
         />
@@ -451,8 +461,8 @@ function SelfieModal({ kind, busy, onCancel, onConfirm }: {
   );
 }
 
-function RequestModal({ kind, leaveTypes, today, onClose, onFiled }: {
-  kind: "leave" | "ot" | "undertime"; leaveTypes: LeaveType[]; today: string;
+function RequestModal({ kind, leaveTypes, today, store, onClose, onFiled }: {
+  kind: "leave" | "ot" | "undertime"; leaveTypes: LeaveType[]; today: string; store: string | null;
   onClose: () => void; onFiled: (msg: string) => void;
 }) {
   const [start, setStart] = useState(today);
@@ -474,6 +484,7 @@ function RequestModal({ kind, leaveTypes, today, onClose, onFiled }: {
       leaveType: kind === "leave" ? (leaveType || null) : null,
       hours: kind === "ot" ? parseFloat(hours || "0") : null,
       reason,
+      store,
     });
     setBusy(false);
     if (!res.ok) { setError(res.error ?? "Could not file."); return; }

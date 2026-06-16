@@ -44,7 +44,9 @@ export default function PortalLoginPage() {
       setCode("");
       return;
     }
-    router.replace("/portal");
+    // Carry the store scope (from the QR) through the login round-trip.
+    const store = new URLSearchParams(window.location.search).get("store");
+    router.replace(store ? `/portal?store=${encodeURIComponent(store)}` : "/portal");
   }
 
   return (
