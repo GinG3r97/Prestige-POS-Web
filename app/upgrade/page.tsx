@@ -24,7 +24,7 @@ const PLAN_INFO = {
   pro: {
     name: "Pro",
     tag: "Everything, unlimited",
-    perks: ["Unlimited orders & catalog", "Payroll & timekeeping", "Bookings & members", "Multiple branches"],
+    perks: ["Unlimited orders & catalog", "Payroll & timekeeping", "Attendance selfie", "Bookings & members", "Multiple branches"],
   },
 } as const;
 
