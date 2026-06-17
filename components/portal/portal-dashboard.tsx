@@ -118,10 +118,11 @@ export function PortalDashboard({
   // theirs, and they must be inside the radius. Disables the button otherwise
   // (the server enforces the same rule; this is the friendly front line).
   const storeHasGeofence = me.geofenced && me.geo_lat != null && me.geo_lng != null;
+  const radius = me.geo_radius_m || 200; // guard 0/undefined so the gate can't lock permanently
   const dist = storeHasGeofence && coords
     ? distanceM(coords.lat, coords.lng, me.geo_lat!, me.geo_lng!)
     : null;
-  const withinRadius = dist != null && dist <= me.geo_radius_m;
+  const withinRadius = dist != null && dist <= radius;
   const canClock = !busy && storeHasGeofence && coords != null && withinRadius;
 
   const gateReason: { text: string; tone: "warn" | "muted" | "ok" } =
@@ -132,27 +133,32 @@ export function PortalDashboard({
         : !coords
           ? { text: "Getting your location…", tone: "muted" }
           : !withinRadius
-            ? { text: `You’re ~${Math.round(dist!)} m away — move within ${me.geo_radius_m} m of the store.`, tone: "warn" }
+            ? { text: `You’re ~${Math.round(dist!)} m away — move within ${radius} m of the store.`, tone: "warn" }
             : { text: me.selfie_required ? "You’re at the store · selfie required" : "You’re at the store · tap the dial", tone: "ok" };
 
   async function doPunch(selfie: string) {
     setBusy(true);
-    const res = await punch({
-      kind: open ? "out" : "in",
-      lat: coords?.lat ?? null,
-      lng: coords?.lng ?? null,
-      selfie,
-      device: navigator.userAgent.slice(0, 120),
-      store,
-    });
-    setBusy(false);
-    setShowSelfie(false);
-    if (!res.ok) {
-      setToast(res.error ?? "Could not record.");
-      return;
+    try {
+      const res = await punch({
+        kind: open ? "out" : "in",
+        lat: coords?.lat ?? null,
+        lng: coords?.lng ?? null,
+        selfie,
+        device: navigator.userAgent.slice(0, 120),
+        store,
+      });
+      if (!res.ok) {
+        setToast(res.error ?? "Could not record.");
+        return;
+      }
+      setToast(`Clocked ${res.result?.kind === "in" ? "in" : "out"} · ${res.result?.at}`);
+      router.refresh();
+    } catch {
+      setToast("Could not record. Please try again.");
+    } finally {
+      setBusy(false);
+      setShowSelfie(false);
     }
-    setToast(`Clocked ${res.result?.kind === "in" ? "in" : "out"} · ${res.result?.at}`);
-    router.refresh();
   }
 
   const flags: { label: string; tone: "warn" | "info" | "ok" }[] = [];
@@ -210,7 +216,7 @@ export function PortalDashboard({
               onTap={() => {
                 if (!canClock) return;
                 if (me.selfie_required) setShowSelfie(true);
-                else doPunch(""); // Pro: no selfie — punch straight away
+                else doPunch(""); // selfie is a Pro feature — free/basic punch straight away
               }} />
             <div className="mt-5 flex flex-col items-center gap-2">
               <StatusPill open={open} clockedOut={summary?.last_out != null} dark />
@@ -338,11 +344,12 @@ export function PortalDashboard({
       )}
       {fileKind && (
         <RequestModal
+          key={fileKind}
           kind={fileKind}
           leaveTypes={leaveTypes}
           today={today}
           store={store}
-          week={weekData}
+          week={week}
           onClose={() => setFileKind(null)}
           onFiled={(msg) => { setFileKind(null); setToast(msg); router.refresh(); }}
         />
@@ -859,6 +866,12 @@ function DateInput({ value, onChange }: { value: string; onChange: (v: string) =
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
+
+  // Re-sync the visible month when the bound value changes (e.g. a detected
+  // OT/UT row pre-fills a past date) so the calendar opens on the right month.
+  useEffect(() => {
+    if (vy) { setViewY(vy); setViewM(vm - 1); }
+  }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const now = new Date();
   const tY = now.getFullYear(), tM = now.getMonth(), tD = now.getDate();
