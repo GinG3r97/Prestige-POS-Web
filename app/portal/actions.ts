@@ -113,6 +113,37 @@ export async function getLeaveCredits(store?: string | null): Promise<LeaveCredi
   return (data ?? []) as LeaveCredit[];
 }
 
+export type PortalPayslip = {
+  run_id: string;
+  period_start: string;
+  period_end: string;
+  kind: "weekly" | "biweekly" | "semi_monthly" | "monthly";
+  status: "finalized" | "paid";
+  paid_at: string | null;
+  compensation_type: "hourly" | "daily" | "salaried";
+  hours_worked: number;
+  hourly_rate: number;
+  daily_rate: number;
+  monthly_salary: number;
+  bonus: number;
+  deductions: number;
+  sss: number;
+  philhealth: number;
+  pagibig: number;
+  ot_hours: number;
+  undertime_hours: number;
+  late_minutes: number;
+  ot_multiplier: number;
+  deduct_undertime: boolean;
+  regular_hours_per_day: number;
+};
+
+export async function getMyPayslips(store?: string | null): Promise<PortalPayslip[]> {
+  const supa = createClient();
+  const { data } = await supa.rpc("portal_my_payslips", { p_store: store ?? null });
+  return (data ?? []) as PortalPayslip[];
+}
+
 export async function punch(input: {
   kind: "in" | "out";
   lat: number | null;

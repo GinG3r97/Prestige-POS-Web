@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import {
   LogOut, Camera, RefreshCw, Loader2, Check, X, MapPin, Lock,
@@ -182,11 +183,19 @@ export function PortalDashboard({
               <p className="text-[11px] text-white/55">{prettyDate(today)}</p>
             </div>
           </div>
-          <form action={portalSignOut}>
-            <button aria-label="Sign out" className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white/80 ring-1 ring-white/15 transition hover:bg-white/20">
-              <LogOut size={16} />
-            </button>
-          </form>
+          <div className="flex items-center gap-2">
+            <Link
+              href={store ? `/portal/payslips?store=${encodeURIComponent(store)}` : "/portal/payslips"}
+              className="flex h-9 items-center gap-1.5 rounded-full bg-white/10 px-3 text-[12px] font-bold text-white/85 ring-1 ring-white/15 transition hover:bg-white/20"
+            >
+              <Wallet size={15} /> Payslips
+            </Link>
+            <form action={portalSignOut}>
+              <button aria-label="Sign out" className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white/80 ring-1 ring-white/15 transition hover:bg-white/20">
+                <LogOut size={16} />
+              </button>
+            </form>
+          </div>
         </div>
       </header>
 
