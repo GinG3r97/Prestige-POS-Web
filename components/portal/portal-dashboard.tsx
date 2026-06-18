@@ -166,7 +166,6 @@ export function PortalDashboard({
     if (summary.late_min > 0) flags.push({ label: `${summary.late_min}m late`, tone: "warn" });
     if (summary.undertime_min > 0) flags.push({ label: `${summary.undertime_min}m undertime`, tone: "warn" });
     if (summary.ot_min > 0) flags.push({ label: `${hrs(summary.ot_min)} OT`, tone: "ok" });
-    if (summary.ot_pending_min > 0) flags.push({ label: `${hrs(summary.ot_pending_min)} OT (file it)`, tone: "info" });
     if (summary.restday_min > 0) flags.push({ label: `${hrs(summary.restday_min)} rest-day`, tone: "ok" });
     if (summary.nightdiff_min > 0) flags.push({ label: `${hrs(summary.nightdiff_min)} night diff`, tone: "info" });
   }
@@ -686,17 +685,17 @@ function RequestModal({ kind, leaveTypes, today, store, week, onClose, onFiled }
   const subtitles = { leave: "Request time off", ot: "Log extra hours", undertime: "Leave early" };
   const Icon = kind === "leave" ? Plane : kind === "ot" ? Clock3 : TimerOff;
 
-  // Auto-detected from this week's punches vs. schedule: extra time worked
-  // (pending OT) or time left early (undertime). Tap one to pre-fill the form.
-  const detected = (kind === "ot" || kind === "undertime") && week
+  // Undertime is auto-detected from this week's punches vs. schedule (time
+  // left early) — tap to pre-fill the date. Overtime is fully manual: the
+  // employee types the hours they're claiming; nothing is detected or capped.
+  const detected = kind === "undertime" && week
     ? week.days
-        .map((d) => ({ date: d.date, mins: kind === "ot" ? d.ot_pending_min : d.undertime_min }))
+        .map((d) => ({ date: d.date, mins: d.undertime_min }))
         .filter((x) => x.mins > 0)
     : [];
 
   function applyDetected(d: { date: string; mins: number }) {
     setStart(d.date);
-    if (kind === "ot") setHours(String(+(d.mins / 60).toFixed(2)));
   }
 
   async function submit(e: React.FormEvent) {
@@ -745,7 +744,7 @@ function RequestModal({ kind, leaveTypes, today, store, week, onClose, onFiled }
         {detected.length > 0 && (
           <div className="rounded-2xl border border-brand-soft/50 bg-brand-tint/60 p-3">
             <p className="mb-2 flex items-center gap-1.5 text-[12px] font-bold text-brand-deep">
-              <Sparkles size={13} /> We detected {kind === "ot" ? "overtime" : "undertime"} — tap to fill
+              <Sparkles size={13} /> We detected undertime — tap to fill
             </p>
             <div className="space-y-1.5">
               {detected.map((d) => {
@@ -756,7 +755,7 @@ function RequestModal({ kind, leaveTypes, today, store, week, onClose, onFiled }
                       active ? "border-brand ring-1 ring-brand" : "border-hairline hover:border-brand-soft"}`}>
                     <span className="text-[13px] font-bold text-ink">{shortDate(d.date)}</span>
                     <span className="rounded-full bg-brand px-2.5 py-0.5 text-[11px] font-bold text-white">
-                      {fmtMins(d.mins)} {kind === "ot" ? "over" : "short"}
+                      {fmtMins(d.mins)} short
                     </span>
                   </button>
                 );
