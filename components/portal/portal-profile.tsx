@@ -52,7 +52,7 @@ export function PortalProfileView({
   return (
     <main className="min-h-dvh bg-surface-2 pb-24">
       {/* Hero */}
-      <header className="relative overflow-hidden bg-gradient-to-b from-ink to-brand-deep px-5 pb-12 pt-7 text-white">
+      <header className="relative overflow-hidden bg-gradient-to-b from-ink to-brand-deep px-5 pb-7 pt-7 text-white">
         <div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-brand/25 blur-3xl" />
         <div className="relative mx-auto flex max-w-md flex-col items-center text-center">
           <div className="grid h-20 w-20 place-items-center rounded-full bg-white/15 text-2xl font-extrabold ring-2 ring-white/25">
@@ -70,7 +70,7 @@ export function PortalProfileView({
         </div>
       </header>
 
-      <div className="mx-auto -mt-6 max-w-md space-y-3 px-4">
+      <div className="mx-auto mt-4 max-w-md space-y-3 px-4">
         <Card title="Contact">
           <Row icon={Mail} label="Email" value={p.email || "—"} />
           <Row icon={Phone} label="Phone" value={p.phone || "—"} />
@@ -128,8 +128,8 @@ export function PortalProfileView({
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="rounded-3xl bg-surface-1 p-4 shadow-card">
-      <p className="mb-2.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-ink-subtle">{title}</p>
-      <div className="space-y-2">{children}</div>
+      <p className="mb-3 text-[11px] font-extrabold uppercase tracking-[0.1em] text-brand-deep">{title}</p>
+      <div className="space-y-2.5">{children}</div>
     </section>
   );
 }
