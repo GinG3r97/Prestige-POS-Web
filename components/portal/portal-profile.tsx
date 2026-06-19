@@ -2,7 +2,7 @@
 
 import {
   LogOut, Mail, Phone, CalendarDays, Briefcase, Clock3,
-  Wallet, ShieldCheck, Store, User,
+  Wallet, ShieldCheck, Store, User, Globe, Sparkles,
 } from "lucide-react";
 import { portalSignOut, type PortalProfile } from "@/app/portal/actions";
 import { PortalNav } from "./portal-nav";
@@ -113,11 +113,31 @@ export function PortalProfileView({
           </button>
         </form>
 
-        {p.portal_email && (
-          <p className="px-1 pt-1 text-center text-[11px] text-ink-subtle">
-            Signed in as {p.portal_email}
+        {/* Branded footer */}
+        <footer className="px-1 pb-2 pt-5 text-center">
+          <p className="flex items-center justify-center gap-1.5 text-[12.5px] font-extrabold text-ink-muted">
+            <Sparkles size={13} className="text-brand" />
+            Powered by Prestige IT Solutions Inc.
           </p>
-        )}
+          <div className="mt-2.5 flex flex-col items-center gap-2 text-[12px]">
+            <a
+              href="https://prestigeitsolutions.tech"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 font-semibold text-ink-muted transition hover:text-brand-deep active:scale-95"
+            >
+              <Globe size={13} className="shrink-0 text-brand-deep" />
+              prestigeitsolutions.tech
+            </a>
+            <a
+              href="mailto:hello@prestigeitsolutions.tech"
+              className="flex items-center gap-1.5 font-semibold text-ink-muted transition hover:text-brand-deep active:scale-95"
+            >
+              <Mail size={13} className="shrink-0 text-brand-deep" />
+              hello@prestigeitsolutions.tech
+            </a>
+          </div>
+        </footer>
       </div>
 
       <PortalNav active="profile" store={store} />
