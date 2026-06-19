@@ -709,6 +709,15 @@ function RequestModal({ kind, leaveTypes, today, store, week, onClose, onFiled }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    // Validate before hitting the server.
+    if (kind === "ot") {
+      const h = parseFloat(hours || "0");
+      if (!(h > 0)) { setError("Enter the overtime hours (more than 0)."); return; }
+      if (h > 24) { setError("That's more than 24 hours — please check."); return; }
+    }
+    if (kind === "leave" && end < start) {
+      setError("The end date can't be before the start date."); return;
+    }
     setBusy(true); setError(null);
     const res = await fileRequest({
       kind, start,

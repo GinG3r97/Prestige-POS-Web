@@ -184,8 +184,16 @@ export async function fileRequest(input: {
     p_reason: input.reason,
     p_store: input.store ?? null,
   });
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: mapFileErr(error.message) };
   return { ok: true };
+}
+
+function mapFileErr(m: string): string {
+  if (m.includes("NOT_PORTAL_USER") || m.includes("NOT_AUTHORIZED"))
+    return "Your portal access isn't active.";
+  if (m.includes("BAD_KIND")) return "That request type isn't allowed.";
+  if (m.toLowerCase().includes("date")) return "Check the dates and try again.";
+  return "Couldn't file the request. Please try again.";
 }
 
 export async function portalSignOut() {
