@@ -150,6 +150,31 @@ export async function getMyPayslips(store?: string | null): Promise<PortalPaysli
   return (data ?? []) as PortalPayslip[];
 }
 
+export type PortalProfile = {
+  name: string;
+  email: string | null;
+  phone: string | null;
+  role: string;
+  store_code: string | null;
+  hire_date: string | null;
+  employment_type: string | null;
+  compensation_type: "hourly" | "daily" | "salaried";
+  hourly_rate: number;
+  daily_rate: number;
+  monthly_salary: number;
+  sss: number;
+  philhealth: number;
+  pagibig: number;
+  portal_email: string | null;
+  schedule: ScheduleEntry[] | null;
+} | null;
+
+export async function getMyProfile(store?: string | null): Promise<PortalProfile> {
+  const supa = createClient();
+  const { data } = await supa.rpc("portal_my_profile", { p_store: store ?? null });
+  return (data as PortalProfile) ?? null;
+}
+
 export async function punch(input: {
   kind: "in" | "out";
   lat: number | null;

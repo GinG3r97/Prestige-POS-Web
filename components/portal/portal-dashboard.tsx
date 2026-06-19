@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import Image from "next/image";
+import { PortalNav } from "./portal-nav";
 import {
   LogOut, Camera, RefreshCw, Loader2, Check, X, MapPin, Lock,
   CalendarDays, Clock3, TimerOff, Plane, Fingerprint, ClipboardList,
@@ -183,19 +183,11 @@ export function PortalDashboard({
               <p className="text-[11px] text-white/55">{prettyDate(today)}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Link
-              href={store ? `/portal/payslips?store=${encodeURIComponent(store)}` : "/portal/payslips"}
-              className="flex h-9 items-center gap-1.5 rounded-full bg-white/10 px-3 text-[12px] font-bold text-white/85 ring-1 ring-white/15 transition hover:bg-white/20"
-            >
-              <Wallet size={15} /> Payslips
-            </Link>
-            <form action={portalSignOut}>
-              <button aria-label="Sign out" className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white/80 ring-1 ring-white/15 transition hover:bg-white/20">
-                <LogOut size={16} />
-              </button>
-            </form>
-          </div>
+          <form action={portalSignOut}>
+            <button aria-label="Sign out" className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white/80 ring-1 ring-white/15 transition hover:bg-white/20">
+              <LogOut size={16} />
+            </button>
+          </form>
         </div>
       </header>
 
@@ -260,7 +252,7 @@ export function PortalDashboard({
       </section>
 
       {/* Content sheet */}
-      <div className="mx-auto -mt-4 max-w-md space-y-4 rounded-t-[28px] bg-surface-2 px-4 pb-14 pt-5">
+      <div className="mx-auto -mt-4 max-w-md space-y-4 rounded-t-[28px] bg-surface-2 px-4 pb-28 pt-5">
         {/* Quick actions */}
         <div>
           <p className="mb-2 px-1 text-[12px] font-bold uppercase tracking-wide text-ink-muted">File a request</p>
@@ -363,6 +355,7 @@ export function PortalDashboard({
         />
       )}
       {toast && <Toast text={toast} onDone={() => setToast(null)} />}
+      <PortalNav active="home" store={store} />
     </main>
   );
 }

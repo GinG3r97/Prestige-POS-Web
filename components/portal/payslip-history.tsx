@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronDown, Receipt } from "lucide-react";
 import type { PortalPayslip } from "@/app/portal/actions";
+import { PortalNav } from "./portal-nav";
 
 // ── Pay math — mirrors the Flutter Payslip model exactly (integer centavos so
 // the net shown here matches the app to the centavo) ─────────────────────────
@@ -76,7 +77,7 @@ export function PayslipHistory({
 }) {
   const dash = store ? `/portal?store=${encodeURIComponent(store)}` : "/portal";
   return (
-    <main className="min-h-dvh bg-surface-2 pb-16">
+    <main className="min-h-dvh bg-surface-2 pb-28">
       <header className="sticky top-0 z-30 border-b border-white/5 bg-ink/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-md items-center gap-3 px-4 py-3 text-white">
           <Link
@@ -112,6 +113,7 @@ export function PayslipHistory({
           </ul>
         )}
       </div>
+      <PortalNav active="payslips" store={store} />
     </main>
   );
 }
