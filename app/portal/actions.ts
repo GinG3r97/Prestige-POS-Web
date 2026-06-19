@@ -140,6 +140,7 @@ export type PortalPayslip = {
   nightdiff_hours: number;
   nightdiff_mult: number;
   absent_days: number;
+  holiday_premium_hours: number;
   regular_hours_per_day: number;
 };
 

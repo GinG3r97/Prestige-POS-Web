@@ -38,8 +38,9 @@ function compute(p: PortalPayslip) {
   const otC = c(p.ot_hours * he * p.ot_multiplier);
   const restdayC = p.restday_mult > 1 ? c(p.restday_hours * he * (p.restday_mult - 1)) : 0;
   const nightC = p.nightdiff_mult > 1 ? c(p.nightdiff_hours * he * (p.nightdiff_mult - 1)) : 0;
+  const holidayC = c(p.holiday_premium_hours * he);
   const bonusC = c(p.bonus);
-  const grossC = baseC + otC + restdayC + nightC + bonusC;
+  const grossC = baseC + otC + restdayC + nightC + holidayC + bonusC;
   const sssC = c(p.sss / pm);
   const phC = c(p.philhealth / pm);
   const piC = c(p.pagibig / pm);
@@ -48,7 +49,7 @@ function compute(p: PortalPayslip) {
     ? c((p.absent_days * p.monthly_salary) / 26) : 0;
   const otherC = c(p.deductions);
   const netC = grossC - sssC - phC - piC - utC - absenceC - otherC;
-  return { baseC, otC, restdayC, nightC, bonusC, grossC, sssC, phC, piC, utC, absenceC, otherC, netC, perDay };
+  return { baseC, otC, restdayC, nightC, holidayC, bonusC, grossC, sssC, phC, piC, utC, absenceC, otherC, netC, perDay };
 }
 
 const peso = (cents: number) =>
@@ -157,6 +158,7 @@ function PayslipCard({ p }: { p: PortalPayslip }) {
             {m.nightC > 0 && (
               <Line label={`Night differential  ${p.nightdiff_hours.toFixed(1)}h`} value={m.nightC} sign="+" />
             )}
+            {m.holidayC > 0 && <Line label="Holiday premium" value={m.holidayC} sign="+" />}
             {m.bonusC > 0 && <Line label="Bonus" value={m.bonusC} sign="+" />}
           </Section>
 
