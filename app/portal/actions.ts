@@ -135,6 +135,11 @@ export type PortalPayslip = {
   late_minutes: number;
   ot_multiplier: number;
   deduct_undertime: boolean;
+  restday_hours: number;
+  restday_mult: number;
+  nightdiff_hours: number;
+  nightdiff_mult: number;
+  absent_days: number;
   regular_hours_per_day: number;
 };
 

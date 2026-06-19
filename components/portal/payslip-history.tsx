@@ -36,15 +36,19 @@ function compute(p: PortalPayslip) {
   else if (p.compensation_type === "daily") baseC = c((p.hours_worked / perDay) * p.daily_rate);
   else baseC = c(p.monthly_salary / pm);
   const otC = c(p.ot_hours * he * p.ot_multiplier);
+  const restdayC = p.restday_mult > 1 ? c(p.restday_hours * he * (p.restday_mult - 1)) : 0;
+  const nightC = p.nightdiff_mult > 1 ? c(p.nightdiff_hours * he * (p.nightdiff_mult - 1)) : 0;
   const bonusC = c(p.bonus);
-  const grossC = baseC + otC + bonusC;
+  const grossC = baseC + otC + restdayC + nightC + bonusC;
   const sssC = c(p.sss / pm);
   const phC = c(p.philhealth / pm);
   const piC = c(p.pagibig / pm);
   const utC = p.deduct_undertime ? c(p.undertime_hours * he) : 0;
+  const absenceC = p.compensation_type === "salaried" && p.absent_days > 0
+    ? c((p.absent_days * p.monthly_salary) / 26) : 0;
   const otherC = c(p.deductions);
-  const netC = grossC - sssC - phC - piC - utC - otherC;
-  return { baseC, otC, bonusC, grossC, sssC, phC, piC, utC, otherC, netC, perDay };
+  const netC = grossC - sssC - phC - piC - utC - absenceC - otherC;
+  return { baseC, otC, restdayC, nightC, bonusC, grossC, sssC, phC, piC, utC, absenceC, otherC, netC, perDay };
 }
 
 const peso = (cents: number) =>
@@ -147,12 +151,19 @@ function PayslipCard({ p }: { p: PortalPayslip }) {
             {m.otC > 0 && (
               <Line label={`Overtime  ${p.ot_hours.toFixed(1)}h × ${p.ot_multiplier.toFixed(2)}×`} value={m.otC} sign="+" />
             )}
+            {m.restdayC > 0 && (
+              <Line label={`Rest-day premium  ${p.restday_hours.toFixed(1)}h × ${p.restday_mult.toFixed(2)}×`} value={m.restdayC} sign="+" />
+            )}
+            {m.nightC > 0 && (
+              <Line label={`Night differential  ${p.nightdiff_hours.toFixed(1)}h`} value={m.nightC} sign="+" />
+            )}
             {m.bonusC > 0 && <Line label="Bonus" value={m.bonusC} sign="+" />}
           </Section>
 
-          {(m.utC > 0 || m.sssC > 0 || m.phC > 0 || m.piC > 0 || m.otherC > 0) && (
+          {(m.utC > 0 || m.absenceC > 0 || m.sssC > 0 || m.phC > 0 || m.piC > 0 || m.otherC > 0) && (
             <Section title="Deductions">
               {m.utC > 0 && <Line label={`Undertime  ${p.undertime_hours.toFixed(1)}h`} value={m.utC} sign="−" deduct />}
+              {m.absenceC > 0 && <Line label={`Absences  ${p.absent_days} day(s)`} value={m.absenceC} sign="−" deduct />}
               {m.sssC > 0 && <Line label="SSS" value={m.sssC} sign="−" deduct />}
               {m.phC > 0 && <Line label="PhilHealth" value={m.phC} sign="−" deduct />}
               {m.piC > 0 && <Line label="Pag-IBIG" value={m.piC} sign="−" deduct />}
