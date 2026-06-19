@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import { PortalNav } from "./portal-nav";
 import {
@@ -270,6 +271,7 @@ export function PortalDashboard({
           busy={weekBusy}
           todayIso={today}
           onJump={loadWeek}
+          store={store}
         />
 
         {/* Leave credits */}
@@ -396,9 +398,9 @@ function ClockDial({ open, canClock, busy, onTap }: {
   );
 }
 
-function WeekCard({ week, offset, busy, todayIso, onJump }: {
+function WeekCard({ week, offset, busy, todayIso, onJump, store }: {
   week: WeekSummary; offset: number; busy: boolean; todayIso: string;
-  onJump: (o: number) => void;
+  onJump: (o: number) => void; store: string | null;
 }) {
   return (
     <div className="rounded-3xl border border-hairline bg-surface-1 p-5 shadow-card">
@@ -438,6 +440,12 @@ function WeekCard({ week, offset, busy, todayIso, onJump }: {
           </div>
         </>
       )}
+      <Link
+        href={store ? `/portal/attendance?store=${encodeURIComponent(store)}` : "/portal/attendance"}
+        className="mt-3 flex items-center justify-center gap-1 rounded-xl bg-surface-2 py-2.5 text-[12px] font-bold text-brand-deep transition hover:bg-surface-3 active:scale-[0.99]"
+      >
+        View full record (per pay cutoff) <ChevronRight size={14} />
+      </Link>
     </div>
   );
 }

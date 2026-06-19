@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Home, Wallet, User, Loader2 } from "lucide-react";
+import { Home, CalendarClock, Wallet, User, Loader2 } from "lucide-react";
 
 /** Sticky bottom tab bar — the portal's primary navigation on phones.
  *  Taps navigate via a transition so we can show a top progress bar + a spinner
@@ -11,7 +11,7 @@ export function PortalNav({
   active,
   store,
 }: {
-  active: "home" | "payslips" | "profile";
+  active: "home" | "attendance" | "payslips" | "profile";
   store: string | null;
 }) {
   const router = useRouter();
@@ -20,6 +20,7 @@ export function PortalNav({
   const q = store ? `?store=${encodeURIComponent(store)}` : "";
   const items = [
     { key: "home", label: "Home", icon: Home, href: `/portal${q}` },
+    { key: "attendance", label: "Attendance", icon: CalendarClock, href: `/portal/attendance${q}` },
     { key: "payslips", label: "Payslips", icon: Wallet, href: `/portal/payslips${q}` },
     { key: "profile", label: "Profile", icon: User, href: `/portal/profile${q}` },
   ] as const;

@@ -175,6 +175,44 @@ export async function getMyProfile(store?: string | null): Promise<PortalProfile
   return (data as PortalProfile) ?? null;
 }
 
+export type DtrDay = {
+  date: string;
+  status: string;
+  first_in: number | null;
+  last_out: number | null;
+  regular_min: number;
+  late_min: number;
+  undertime_min: number;
+  ot_min: number;
+  restday_min: number;
+  leave_min: number;
+  leave_name: string | null;
+  holiday_name: string | null;
+  holiday_paid_min: number;
+};
+
+export type PortalDtr = {
+  period_start: string;
+  period_end: string;
+  offset: number;
+  dtr: {
+    regular_hours: number;
+    ot_hours: number;
+    undertime_hours: number;
+    late_minutes: number;
+    paid_leave_hours: number;
+    holiday_premium_hours: number;
+    absent_days: number;
+    days: DtrDay[];
+  } | null;
+} | null;
+
+export async function getMyDtr(offset: number, store?: string | null): Promise<PortalDtr> {
+  const supa = createClient();
+  const { data } = await supa.rpc("portal_my_dtr", { p_offset: offset, p_store: store ?? null });
+  return (data as PortalDtr) ?? null;
+}
+
 export async function punch(input: {
   kind: "in" | "out";
   lat: number | null;

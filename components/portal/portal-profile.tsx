@@ -2,7 +2,7 @@
 
 import {
   LogOut, Mail, Phone, CalendarDays, Briefcase, Clock3,
-  Wallet, ShieldCheck, Store, User, Globe, Sparkles,
+  Wallet, ShieldCheck, Store, User, Globe,
 } from "lucide-react";
 import { portalSignOut, type PortalProfile } from "@/app/portal/actions";
 import { PortalNav } from "./portal-nav";
@@ -115,8 +115,7 @@ export function PortalProfileView({
 
         {/* Branded footer */}
         <footer className="px-1 pb-2 pt-5 text-center">
-          <p className="flex items-center justify-center gap-1.5 text-[12.5px] font-extrabold text-ink-muted">
-            <Sparkles size={13} className="text-brand" />
+          <p className="text-[12.5px] font-extrabold text-ink-muted">
             Powered by Prestige IT Solutions Inc.
           </p>
           <div className="mt-2.5 flex flex-col items-center gap-2 text-[12px]">
