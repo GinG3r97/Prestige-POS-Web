@@ -49,14 +49,14 @@ export type MyStoreAttendance = {
 
 export async function getMyStoreAttendance(): Promise<MyStoreAttendance | null> {
   const supa = createClient();
-  const {
-    data: { user },
-  } = await supa.auth.getUser();
-  if (!user) return null;
+  // Resolve via my_tenant_id() so co-owners (tenant_members), not just the
+  // owner_id, get their store. RLS now permits members to read the row.
+  const tenantId = await getMyTenantId();
+  if (!tenantId) return null;
   const { data } = await supa
     .from("tenants")
     .select("id, business_name, store_code, geo_lat, geo_lng, geo_radius_m")
-    .eq("owner_id", user.id)
+    .eq("id", tenantId)
     .maybeSingle();
   if (!data) return null;
   return {
