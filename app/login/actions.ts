@@ -16,9 +16,16 @@ export async function requestOtp(
     return { ok: false, error: "Enter a valid email address." };
   }
   const supa = createClient();
+  // Admins and granted co-owners (tenant_members) may self-provision on
+  // first sign-in; everyone else must already have an account.
+  let allowCreate = isAdminEmail(clean);
+  if (!allowCreate) {
+    const { data } = await supa.rpc("email_is_member", { p_email: clean });
+    allowCreate = data === true;
+  }
   const { error } = await supa.auth.signInWithOtp({
     email: clean,
-    options: { shouldCreateUser: isAdminEmail(clean) },
+    options: { shouldCreateUser: allowCreate },
   });
   if (error) {
     const m = error.message.toLowerCase();

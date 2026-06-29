@@ -1,7 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { RefreshCw, CreditCard, Tag, Layers, TrendingUp, Award, X } from "lucide-react";
+import {
+  RefreshCw,
+  CreditCard,
+  Tag,
+  Layers,
+  TrendingUp,
+  Award,
+  X,
+  ChevronDown,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { peso, pesoCompact, num, PAYMENT_LABELS } from "@/lib/format";
 import { Bars } from "./bits";
@@ -114,6 +123,8 @@ export function SalesReport({ tenantId }: { tenantId: string }) {
   const [data, setData] = useState<SalesReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState(false);
+  const [showAllCats, setShowAllCats] = useState(false);
+  const [showAllSellers, setShowAllSellers] = useState(false);
 
   // Active window. Custom reads the two date inputs (swapped if reversed).
   const bounds = useMemo(() => {
@@ -333,7 +344,7 @@ export function SalesReport({ tenantId }: { tenantId: string }) {
                 ) : null}
               </p>
               <div className="space-y-2.5">
-                {cats.map((c) => {
+                {(showAllCats ? cats : cats.slice(0, 5)).map((c) => {
                   const pct = (c.cents / catTotal) * 100;
                   return (
                     <div key={c.category}>
@@ -351,6 +362,13 @@ export function SalesReport({ tenantId }: { tenantId: string }) {
                   );
                 })}
               </div>
+              {cats.length > 5 && (
+                <MoreToggle
+                  open={showAllCats}
+                  onClick={() => setShowAllCats((v) => !v)}
+                  count={cats.length}
+                />
+              )}
             </div>
           )}
 
@@ -361,7 +379,7 @@ export function SalesReport({ tenantId }: { tenantId: string }) {
                 <Award size={14} className="text-brand-deep" /> Best sellers
               </p>
               <ol className="space-y-2.5">
-                {data.top_sellers.map((s, i) => (
+                {(showAllSellers ? data.top_sellers : data.top_sellers.slice(0, 5)).map((s, i) => (
                   <li key={s.name} className="flex items-center gap-3">
                     <span className="grid h-6 w-6 shrink-0 place-items-center rounded-md bg-brand-tint text-[11px] font-bold text-brand-deep">
                       {i + 1}
@@ -376,6 +394,13 @@ export function SalesReport({ tenantId }: { tenantId: string }) {
                   </li>
                 ))}
               </ol>
+              {data.top_sellers.length > 5 && (
+                <MoreToggle
+                  open={showAllSellers}
+                  onClick={() => setShowAllSellers((v) => !v)}
+                  count={data.top_sellers.length}
+                />
+              )}
             </div>
           )}
 
@@ -441,6 +466,26 @@ function TabCard({
         <Icon size={13} /> {label}
       </span>
       <p className="mt-1 text-base font-semibold tracking-tight text-ink">{value}</p>
+    </button>
+  );
+}
+
+function MoreToggle({
+  open,
+  onClick,
+  count,
+}: {
+  open: boolean;
+  onClick: () => void;
+  count: number;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="mt-2.5 flex w-full items-center justify-center gap-1 rounded-lg border border-hairline bg-surface-1 py-1.5 text-[12px] font-semibold text-ink-muted transition hover:text-ink"
+    >
+      {open ? "Show less" : `Show all ${count}`}
+      <ChevronDown size={14} className={`transition ${open ? "rotate-180" : ""}`} />
     </button>
   );
 }
