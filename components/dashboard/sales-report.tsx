@@ -1,15 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Wallet,
-  ReceiptText,
-  TrendingUp,
-  CreditCard,
-  Layers,
-  Tag,
-  RefreshCw,
-} from "lucide-react";
+import { RefreshCw, CreditCard, Tag, Layers, TrendingUp, Award, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { peso, pesoCompact, num, PAYMENT_LABELS } from "@/lib/format";
 import { Bars } from "./bits";
@@ -78,6 +70,20 @@ function rangeBounds(key: RangeKey): { from: Date; to: Date } {
   }
 }
 
+const fmtDay = (d: Date) => d.toLocaleDateString("en-PH", { month: "short", day: "numeric" });
+
+/** Plain-language label of the period being shown, e.g. "Jun 1 – Jun 29". */
+function rangeLabel(key: RangeKey): string {
+  if (key === "all") return "All time";
+  const { from, to } = rangeBounds(key);
+  const last = new Date(to);
+  last.setDate(last.getDate() - 1);
+  if (key === "today") return `Today · ${fmtDay(from)}`;
+  if (key === "yesterday") return `Yesterday · ${fmtDay(from)}`;
+  if (from.toDateString() === last.toDateString()) return fmtDay(from);
+  return `${fmtDay(from)} – ${fmtDay(last)}`;
+}
+
 /** Payment-method tones — mirror the POS app's Reports palette. */
 const PAY_TONE: Record<string, string> = {
   cash: "#5C8A6B",
@@ -94,7 +100,7 @@ export function SalesReport({ tenantId }: { tenantId: string }) {
   const supa = useMemo(() => createClient(), []);
   const [rangeKey, setRangeKey] = useState<RangeKey>("today");
   const [method, setMethod] = useState<string | null>(null);
-  const [tab, setTab] = useState<"general" | "separated">("general");
+  const [tab, setTab] = useState<"regular" | "separated">("regular");
   const [data, setData] = useState<SalesReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState(false);
@@ -122,22 +128,26 @@ export function SalesReport({ tenantId }: { tenantId: string }) {
     load();
   }, [load]);
 
+  // Only surface the Regular/Separated split when this store actually
+  // separates anything — otherwise it's noise.
+  const hasSeparated =
+    (data?.by_category ?? []).some((c) => c.separated) ||
+    (data?.split.separated_cents ?? 0) > 0;
+  const activeTab = hasSeparated ? tab : "regular";
+
   const cats = (data?.by_category ?? []).filter(
-    (c) => c.separated === (tab === "separated"),
+    (c) => c.separated === (activeTab === "separated"),
   );
   const catTotal = cats.reduce((a, c) => a + c.cents, 0) || 1;
   const payTotal = (data?.payment_mix ?? []).reduce((a, p) => a + p.amount, 0) || 1;
-  const tabRevenue =
-    tab === "separated" ? data?.split.separated_cents ?? 0 : data?.split.general_cents ?? 0;
-  const tabQty =
-    tab === "separated" ? data?.split.separated_qty ?? 0 : data?.split.general_qty ?? 0;
+  const methodLabel = method ? PAYMENT_LABELS[method] ?? method : null;
 
   return (
     <section className="rounded-2xl border border-hairline bg-surface-1 p-5 shadow-card">
       {/* Heading + refresh */}
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-3 flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-brand-deep">
-          <TrendingUp size={16} /> Sales report
+          <TrendingUp size={16} /> Sales
         </h2>
         <button
           onClick={load}
@@ -148,8 +158,8 @@ export function SalesReport({ tenantId }: { tenantId: string }) {
         </button>
       </div>
 
-      {/* Date range chips */}
-      <div className="-mx-1 mb-3 flex gap-1.5 overflow-x-auto pb-1">
+      {/* Pick a period */}
+      <div className="-mx-1 mb-4 flex gap-1.5 overflow-x-auto px-1 pb-1">
         {RANGES.map((r) => (
           <Chip key={r.key} active={rangeKey === r.key} onClick={() => setRangeKey(r.key)}>
             {r.label}
@@ -157,89 +167,61 @@ export function SalesReport({ tenantId }: { tenantId: string }) {
         ))}
       </div>
 
-      {/* General / Separated tabs */}
-      <div className="mb-3 flex gap-1.5">
-        <Chip active={tab === "general"} onClick={() => setTab("general")}>
-          <Layers size={13} className="mr-1 inline" /> General
-        </Chip>
-        <Chip active={tab === "separated"} onClick={() => setTab("separated")}>
-          <Tag size={13} className="mr-1 inline" /> Separated
-        </Chip>
-      </div>
-
-      {/* Payment-method filter chips */}
-      <div className="-mx-1 mb-4 flex gap-1.5 overflow-x-auto pb-1">
-        <Chip active={method === null} onClick={() => setMethod(null)}>
-          All payments
-        </Chip>
-        {(data?.payment_mix ?? []).map((p) => (
-          <Chip key={p.method} active={method === p.method} onClick={() => setMethod(p.method)}>
-            <span
-              className="mr-1.5 inline-block h-2 w-2 rounded-full align-middle"
-              style={{ backgroundColor: toneFor(p.method) }}
-            />
-            {PAYMENT_LABELS[p.method] ?? p.method}
-          </Chip>
-        ))}
-      </div>
-
       {err ? (
-        <Empty>Couldn&apos;t load sales. Tap refresh to try again.</Empty>
+        <Empty>Couldn&apos;t load your sales. Tap the refresh button to try again.</Empty>
       ) : loading && !data ? (
-        <div className="grid h-32 place-items-center text-[13px] text-ink-subtle">
-          Loading…
+        <div className="grid h-40 place-items-center text-[13px] text-ink-subtle">
+          Loading your sales…
         </div>
       ) : !data ? null : (
-        <div className="space-y-4">
-          {/* Headline KPIs */}
-          <div className="grid grid-cols-3 gap-3">
-            <Stat
-              accent
-              label={method ? `${PAYMENT_LABELS[method] ?? method} sales` : "Total sales"}
-              value={peso(data.kpis.revenue_cents)}
-              sub={`${num(data.kpis.orders)} orders`}
-              icon={Wallet}
-            />
-            <Stat
-              label="Avg ticket"
-              value={peso(data.kpis.avg_ticket_cents)}
-              sub="paid orders"
-              icon={ReceiptText}
-            />
-            <Stat
-              label={tab === "separated" ? "Separated" : "General"}
-              value={peso(tabRevenue)}
-              sub={`${num(tabQty)} items`}
-              icon={tab === "separated" ? Tag : Layers}
-            />
-          </div>
-
-          {/* General vs Separated split bar */}
-          <div className="rounded-xl border border-hairline bg-surface-2 p-3">
-            <div className="mb-2 flex items-center justify-between text-[12px]">
-              <span className="font-semibold text-ink-muted">General vs Separated</span>
-              <span className="text-ink-subtle">line revenue</span>
+        <div className="space-y-5">
+          {/* Hero — total sales for the chosen period */}
+          <div className="rounded-2xl border border-brand/25 bg-gradient-to-br from-brand-tint/60 to-surface-1 p-5">
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-deep">
+                {methodLabel ? `${methodLabel} sales` : "Total sales"}
+              </p>
+              <span className="text-[11px] font-medium text-ink-muted">{rangeLabel(rangeKey)}</span>
             </div>
-            <SplitBar general={data.split.general_cents} separated={data.split.separated_cents} />
+            <p className="mt-1 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+              {peso(data.kpis.revenue_cents)}
+            </p>
+            <p className="mt-1 text-[13px] text-ink-muted">
+              {num(data.kpis.orders)} {data.kpis.orders === 1 ? "order" : "orders"}
+              <span className="mx-1.5 text-ink-subtle">·</span>
+              {peso(data.kpis.avg_ticket_cents)} average sale
+            </p>
+            {methodLabel && (
+              <button
+                onClick={() => setMethod(null)}
+                className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-surface-1 px-3 py-1 text-[12px] font-semibold text-ink-muted shadow-card transition hover:text-ink"
+              >
+                Showing {methodLabel} only <X size={13} /> clear
+              </button>
+            )}
           </div>
 
-          {/* By payment method */}
+          {/* How customers paid — the bars ARE the filter (tap to focus one) */}
           <div>
-            <p className="mb-2 flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-wide text-ink-muted">
-              <CreditCard size={13} /> By payment method
+            <p className="mb-1 flex items-center gap-1.5 text-[13px] font-semibold text-ink">
+              <CreditCard size={14} className="text-brand-deep" /> How customers paid
+            </p>
+            <p className="mb-2.5 text-[12px] text-ink-subtle">
+              Tap a payment type to see only those sales.
             </p>
             {data.payment_mix.length === 0 ? (
-              <Empty>No payments in range.</Empty>
+              <Empty>No payments recorded in this period.</Empty>
             ) : (
               <div className="space-y-2.5">
                 {data.payment_mix.map((p) => {
                   const pct = (p.amount / payTotal) * 100;
+                  const on = method === p.method;
                   return (
                     <button
                       key={p.method}
-                      onClick={() => setMethod(method === p.method ? null : p.method)}
-                      className={`w-full rounded-lg px-1 py-1 text-left transition ${
-                        method === p.method ? "bg-brand-tint/40" : "hover:bg-surface-2"
+                      onClick={() => setMethod(on ? null : p.method)}
+                      className={`w-full rounded-xl px-2 py-1.5 text-left transition ${
+                        on ? "bg-brand-tint/50 ring-1 ring-brand/30" : "hover:bg-surface-2"
                       }`}
                     >
                       <div className="mb-1 flex items-center justify-between text-[13px]">
@@ -251,10 +233,11 @@ export function SalesReport({ tenantId }: { tenantId: string }) {
                           {PAYMENT_LABELS[p.method] ?? p.method}
                         </span>
                         <span className="text-ink-muted">
-                          {peso(p.amount)} · {num(p.count)} tx · {pct.toFixed(0)}%
+                          {peso(p.amount)}
+                          <span className="ml-1.5 text-ink-subtle">{pct.toFixed(0)}%</span>
                         </span>
                       </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-surface-3">
+                      <div className="h-2.5 overflow-hidden rounded-full bg-surface-3">
                         <div
                           className="h-full rounded-full"
                           style={{ width: `${pct}%`, backgroundColor: toneFor(p.method) }}
@@ -267,17 +250,39 @@ export function SalesReport({ tenantId }: { tenantId: string }) {
             )}
           </div>
 
-          {/* Revenue by category (scoped to the active tab) */}
+          {/* Regular vs Separated — only when this store separates sales */}
+          {hasSeparated && (
+            <div className="grid grid-cols-2 gap-2">
+              <TabCard
+                active={activeTab === "regular"}
+                onClick={() => setTab("regular")}
+                icon={Layers}
+                label="Regular sales"
+                value={peso(data.split.general_cents)}
+              />
+              <TabCard
+                active={activeTab === "separated"}
+                onClick={() => setTab("separated")}
+                icon={Tag}
+                label="Separated"
+                value={peso(data.split.separated_cents)}
+              />
+            </div>
+          )}
+
+          {/* Sales by category (scoped to the active tab) */}
           <div>
-            <p className="mb-2 text-[12px] font-semibold uppercase tracking-wide text-ink-muted">
-              {tab === "separated" ? "Separated revenue by group" : "Revenue by category"}
-              {method ? ` · ${PAYMENT_LABELS[method] ?? method}` : ""}
+            <p className="mb-2 text-[13px] font-semibold text-ink">
+              {activeTab === "separated" ? "Separated sales by group" : "Sales by category"}
+              {methodLabel ? (
+                <span className="font-normal text-ink-muted"> · {methodLabel}</span>
+              ) : null}
             </p>
             {cats.length === 0 ? (
               <Empty>
-                {tab === "separated"
-                  ? "No separated sales in this range. Flag a Category or Product Type as “Separate in Sales reports” in the app."
-                  : "No sales in this range yet."}
+                {activeTab === "separated"
+                  ? "No separated sales in this period. In the app, flag a category or product type as “Separate in sales reports” (e.g. consigned Books) and they’ll show here on their own."
+                  : "No sales in this period yet. Try a wider range like “Last 7 days”."}
               </Empty>
             ) : (
               <div className="space-y-2.5">
@@ -288,14 +293,12 @@ export function SalesReport({ tenantId }: { tenantId: string }) {
                       <div className="mb-1 flex items-center justify-between text-[13px]">
                         <span className="min-w-0 truncate font-medium text-ink">{c.category}</span>
                         <span className="shrink-0 text-ink-muted">
-                          {peso(c.cents)} · {num(c.qty)} sold
+                          {peso(c.cents)}
+                          <span className="ml-1.5 text-ink-subtle">{num(c.qty)} sold</span>
                         </span>
                       </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-surface-3">
-                        <div
-                          className="h-full rounded-full bg-brand"
-                          style={{ width: `${pct}%` }}
-                        />
+                      <div className="h-2.5 overflow-hidden rounded-full bg-surface-3">
+                        <div className="h-full rounded-full bg-brand" style={{ width: `${pct}%` }} />
                       </div>
                     </div>
                   );
@@ -304,13 +307,13 @@ export function SalesReport({ tenantId }: { tenantId: string }) {
             )}
           </div>
 
-          {/* Top sellers */}
+          {/* Best sellers */}
           <div>
-            <p className="mb-2 flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-wide text-ink-muted">
-              <Tag size={13} /> Top sellers
+            <p className="mb-2 flex items-center gap-1.5 text-[13px] font-semibold text-ink">
+              <Award size={14} className="text-brand-deep" /> Best sellers
             </p>
             {data.top_sellers.length === 0 ? (
-              <Empty>No sales in range.</Empty>
+              <Empty>No sales in this period yet.</Empty>
             ) : (
               <ol className="space-y-2.5">
                 {data.top_sellers.map((s, i) => (
@@ -331,13 +334,13 @@ export function SalesReport({ tenantId }: { tenantId: string }) {
             )}
           </div>
 
-          {/* Daily trend */}
-          <div>
-            <p className="mb-2 text-[12px] font-semibold uppercase tracking-wide text-ink-muted">
-              Daily revenue
-            </p>
-            <Bars data={data.daily} />
-          </div>
+          {/* Daily sales */}
+          {data.daily.length > 1 && (
+            <div>
+              <p className="mb-2 text-[13px] font-semibold text-ink">Daily sales</p>
+              <Bars data={data.daily} />
+            </div>
+          )}
         </div>
       )}
     </section>
@@ -356,7 +359,7 @@ function Chip({
   return (
     <button
       onClick={onClick}
-      className={`shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-[12px] font-semibold transition ${
+      className={`shrink-0 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition ${
         active
           ? "border-brand bg-brand text-white"
           : "border-hairline bg-surface-1 text-ink-muted hover:text-ink"
@@ -367,64 +370,39 @@ function Chip({
   );
 }
 
-function Stat({
+function TabCard({
+  active,
+  onClick,
+  icon: Icon,
   label,
   value,
-  sub,
-  icon: Icon,
-  accent = false,
 }: {
+  active: boolean;
+  onClick: () => void;
+  icon: typeof Tag;
   label: string;
   value: string;
-  sub?: string;
-  icon: typeof Wallet;
-  accent?: boolean;
 }) {
   return (
-    <div
-      className={`rounded-xl border p-3 shadow-card ${
-        accent
-          ? "border-brand/30 bg-gradient-to-br from-brand-tint/60 to-surface-1"
-          : "border-hairline bg-surface-1"
+    <button
+      onClick={onClick}
+      className={`rounded-xl border p-3 text-left transition ${
+        active
+          ? "border-brand bg-brand-tint/40 ring-1 ring-brand/30"
+          : "border-hairline bg-surface-1 hover:bg-surface-2"
       }`}
     >
-      <div className="flex items-center justify-between">
-        <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-muted">
-          {label}
-        </span>
-        <Icon size={14} className="text-brand-deep" />
-      </div>
-      <p className="mt-1 text-base font-semibold tracking-tight text-ink sm:text-lg">{value}</p>
-      {sub && <p className="text-[11px] text-ink-subtle">{sub}</p>}
-    </div>
-  );
-}
-
-function SplitBar({ general, separated }: { general: number; separated: number }) {
-  const total = general + separated || 1;
-  const gPct = (general / total) * 100;
-  const sPct = (separated / total) * 100;
-  return (
-    <div>
-      <div className="flex h-3 overflow-hidden rounded-full bg-surface-3">
-        <div className="h-full bg-brand" style={{ width: `${gPct}%` }} />
-        <div className="h-full bg-brand-deep" style={{ width: `${sPct}%` }} />
-      </div>
-      <div className="mt-1.5 flex items-center justify-between text-[11px] text-ink-muted">
-        <span className="flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full bg-brand" /> General {peso(general)}
-        </span>
-        <span className="flex items-center gap-1.5">
-          Separated {peso(separated)} <span className="h-2 w-2 rounded-full bg-brand-deep" />
-        </span>
-      </div>
-    </div>
+      <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-muted">
+        <Icon size={13} /> {label}
+      </span>
+      <p className="mt-1 text-base font-semibold tracking-tight text-ink">{value}</p>
+    </button>
   );
 }
 
 function Empty({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-dashed border-hairline px-4 py-6 text-center text-[12px] text-ink-subtle">
+    <div className="rounded-xl border border-dashed border-hairline px-4 py-6 text-center text-[12px] leading-relaxed text-ink-subtle">
       {children}
     </div>
   );
