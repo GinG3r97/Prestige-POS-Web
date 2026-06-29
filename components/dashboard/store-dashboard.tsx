@@ -1,21 +1,18 @@
 import {
   Wallet,
   ReceiptText,
-  TrendingUp,
-  CalendarClock,
   Boxes,
   Users,
   Building2,
   Tag,
   AlertTriangle,
   Clock,
-  CreditCard,
   PauseCircle,
   Ban,
 } from "lucide-react";
 import type { TenantDetail } from "@/lib/data/types";
-import { peso, pesoCompact, num, timeAgo, PAYMENT_LABELS } from "@/lib/format";
-import { Kpi, Bars, PlanBadge, StatusDot } from "./bits";
+import { peso, num, timeAgo } from "@/lib/format";
+import { PlanBadge, StatusDot } from "./bits";
 import { SubscriptionEditor } from "./subscription-editor";
 import { TenantActions } from "./tenant-actions";
 
@@ -57,7 +54,6 @@ export function StoreDashboard({
       s.status === "open" ||
       new Date(s.opened_at).toDateString() === new Date().toDateString(),
   );
-  const payTotal = d.payment_mix.reduce((a, b) => a + b.amount, 0) || 1;
 
   return (
     <div className="space-y-4">
@@ -105,16 +101,6 @@ export function StoreDashboard({
       {/* Admin controls */}
       {editable && <TenantActions tenantId={d.tenant.id} sub={d.subscription} />}
 
-      {/* KPIs */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <Kpi accent label="Today" value={peso(k.revenue_today_cents)} sub={`${num(k.orders_today)} orders`} icon={Wallet} />
-        <Kpi label="Avg ticket" value={peso(k.avg_ticket_cents)} sub="paid orders" icon={ReceiptText} />
-        <Kpi label="Last 7 days" value={peso(k.revenue_7d_cents)} icon={TrendingUp} />
-        <Kpi label="Last 30 days" value={peso(k.revenue_30d_cents)} sub={`${num(k.orders_30d)} orders`} icon={CalendarClock} />
-        <Kpi label="All-time sales" value={peso(k.gross_cents)} sub={`${num(k.orders_total)} orders`} icon={TrendingUp} />
-        <Kpi label="Last activity" value={timeAgo(k.last_order_at)} icon={Clock} />
-      </div>
-
       {/* Counts */}
       <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
         <CountCard icon={Tag} label="Products" value={d.counts.products} />
@@ -127,49 +113,6 @@ export function StoreDashboard({
 
       {/* Section cards — single column on phone, 2-col masonry on tablet/desktop */}
       <div className="lg:columns-2 lg:gap-4 [&>section]:mb-4 lg:[&>section]:break-inside-avoid">
-        <Section title="Revenue · last 14 days" icon={TrendingUp}>
-          <Bars data={d.daily} />
-        </Section>
-
-        <Section title="Payment mix · 30 days" icon={CreditCard}>
-          {d.payment_mix.length === 0 ? (
-            <p className="text-[13px] text-ink-subtle">No payments in range.</p>
-          ) : (
-            <div className="space-y-3">
-              {d.payment_mix.map((p) => (
-                <div key={p.method}>
-                  <div className="mb-1 flex items-center justify-between text-[13px]">
-                    <span className="font-medium text-ink">{PAYMENT_LABELS[p.method] ?? p.method}</span>
-                    <span className="text-ink-muted">{peso(p.amount)} · {num(p.count)}</span>
-                  </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-surface-3">
-                    <div className="h-full rounded-full bg-brand" style={{ width: `${(p.amount / payTotal) * 100}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </Section>
-
-        <Section title="Top sellers · 30 days" icon={Tag}>
-          {d.top_sellers.length === 0 ? (
-            <p className="text-[13px] text-ink-subtle">No sales in range.</p>
-          ) : (
-            <ol className="space-y-2.5">
-              {d.top_sellers.map((s, i) => (
-                <li key={s.name} className="flex items-center gap-3">
-                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-md bg-brand-tint text-[11px] font-bold text-brand-deep">
-                    {i + 1}
-                  </span>
-                  <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-ink">{s.name}</span>
-                  <span className="text-[12px] text-ink-muted">{num(s.qty)} sold</span>
-                  <span className="w-16 text-right text-[12px] font-semibold text-ink">{pesoCompact(s.revenue)}</span>
-                </li>
-              ))}
-            </ol>
-          )}
-        </Section>
-
         {d.low_stock_items.length > 0 && (
           <Section title="Low / out of stock" icon={AlertTriangle}>
             <ul className="space-y-2">

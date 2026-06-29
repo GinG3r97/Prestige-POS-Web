@@ -37,4 +37,7 @@ export const PAYMENT_LABELS: Record<string, string> = {
   gcash: "GCash",
   qrph: "QR Ph",
   bank_transfer: "Bank transfer",
+  paymaya: "PayMaya",
+  card: "Card",
+  other: "Other",
 };

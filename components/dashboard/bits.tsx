@@ -84,7 +84,7 @@ export function Bars({ data }: { data: { d: string; rev: number }[] }) {
   return (
     <div className="flex h-24 items-end gap-1">
       {data.map((x) => (
-        <div key={x.d} className="group flex flex-1 flex-col items-center justify-end">
+        <div key={x.d} className="group flex h-full flex-1 flex-col items-center justify-end">
           <div
             title={`${new Date(x.d).toLocaleDateString("en-PH", { month: "short", day: "numeric" })} · ${peso(x.rev)}`}
             className="w-full rounded-t bg-brand/70 transition group-hover:bg-brand"

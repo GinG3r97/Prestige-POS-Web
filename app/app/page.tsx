@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Store, Clock, ChevronRight } from "lucide-react";
 import { getMyTenantId, getTenantDetail } from "@/lib/data/dashboard";
 import { StoreDashboard } from "@/components/dashboard/store-dashboard";
+import { SalesReport } from "@/components/dashboard/sales-report";
 import { PortalHeader } from "@/components/dashboard/portal-header";
 import { signOut } from "@/app/portal-actions";
 
@@ -51,6 +52,7 @@ export default async function ClientPortalPage() {
           </div>
           <ChevronRight size={16} className="text-ink-subtle" />
         </Link>
+        <SalesReport tenantId={tenantId} />
         <StoreDashboard d={d} />
       </main>
     </>
