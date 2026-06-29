@@ -34,18 +34,17 @@ const RANGES = [
   { key: "30d", label: "Last 30 days" },
   { key: "month", label: "This month" },
   { key: "all", label: "All time" },
+  { key: "custom", label: "Custom" },
 ] as const;
 type RangeKey = (typeof RANGES)[number]["key"];
 
 /** Local-time day boundaries (PH users run in +08, so "today" lines up). */
-function rangeBounds(key: RangeKey): { from: Date; to: Date } {
+function presetBounds(key: RangeKey): { from: Date; to: Date } {
   const now = new Date();
   const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const startTomorrow = new Date(startToday);
   startTomorrow.setDate(startToday.getDate() + 1);
   switch (key) {
-    case "today":
-      return { from: startToday, to: startTomorrow };
     case "yesterday": {
       const y = new Date(startToday);
       y.setDate(y.getDate() - 1);
@@ -67,15 +66,23 @@ function rangeBounds(key: RangeKey): { from: Date; to: Date } {
     }
     case "all":
       return { from: new Date(2000, 0, 1), to: startTomorrow };
+    default: // today + fallback
+      return { from: startToday, to: startTomorrow };
   }
 }
 
 const fmtDay = (d: Date) => d.toLocaleDateString("en-PH", { month: "short", day: "numeric" });
 
+/** Local yyyy-mm-dd for <input type="date">. */
+function toInputDate(d: Date): string {
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
 /** Plain-language label of the period being shown, e.g. "Jun 1 – Jun 29". */
-function rangeLabel(key: RangeKey): string {
+function labelFor(key: RangeKey, from: Date, to: Date): string {
   if (key === "all") return "All time";
-  const { from, to } = rangeBounds(key);
   const last = new Date(to);
   last.setDate(last.getDate() - 1);
   if (key === "today") return `Today · ${fmtDay(from)}`;
@@ -98,21 +105,39 @@ const toneFor = (m: string) => PAY_TONE[m] ?? "#8A8A8A";
 
 export function SalesReport({ tenantId }: { tenantId: string }) {
   const supa = useMemo(() => createClient(), []);
+  const todayStr = useMemo(() => toInputDate(new Date()), []);
   const [rangeKey, setRangeKey] = useState<RangeKey>("today");
+  const [customFrom, setCustomFrom] = useState(todayStr);
+  const [customTo, setCustomTo] = useState(todayStr);
   const [method, setMethod] = useState<string | null>(null);
   const [tab, setTab] = useState<"regular" | "separated">("regular");
   const [data, setData] = useState<SalesReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState(false);
 
+  // Active window. Custom reads the two date inputs (swapped if reversed).
+  const bounds = useMemo(() => {
+    if (rangeKey !== "custom") return presetBounds(rangeKey);
+    let from = new Date(`${customFrom}T00:00:00`);
+    let lastDay = new Date(`${customTo}T00:00:00`);
+    if (isNaN(from.getTime())) from = new Date();
+    if (isNaN(lastDay.getTime())) lastDay = from;
+    if (lastDay < from) [from, lastDay] = [lastDay, from];
+    const to = new Date(lastDay);
+    to.setDate(to.getDate() + 1);
+    return { from, to };
+  }, [rangeKey, customFrom, customTo]);
+
+  const fromIso = bounds.from.toISOString();
+  const toIso = bounds.to.toISOString();
+
   const load = useCallback(async () => {
     setLoading(true);
     setErr(false);
-    const { from, to } = rangeBounds(rangeKey);
     const { data: d, error } = await supa.rpc("tenant_sales_report", {
       p_tenant: tenantId,
-      p_from: from.toISOString(),
-      p_to: to.toISOString(),
+      p_from: fromIso,
+      p_to: toIso,
       p_method: method,
     });
     if (error) {
@@ -122,7 +147,7 @@ export function SalesReport({ tenantId }: { tenantId: string }) {
       setData(d as SalesReportData);
     }
     setLoading(false);
-  }, [supa, tenantId, rangeKey, method]);
+  }, [supa, tenantId, fromIso, toIso, method]);
 
   useEffect(() => {
     load();
@@ -143,7 +168,7 @@ export function SalesReport({ tenantId }: { tenantId: string }) {
   const methodLabel = method ? PAYMENT_LABELS[method] ?? method : null;
 
   return (
-    <section className="rounded-2xl border border-hairline bg-surface-1 p-5 shadow-card">
+    <section className="rounded-2xl border border-hairline bg-surface-1 p-4 shadow-card sm:p-5">
       {/* Heading + refresh */}
       <div className="mb-3 flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-brand-deep">
@@ -159,13 +184,39 @@ export function SalesReport({ tenantId }: { tenantId: string }) {
       </div>
 
       {/* Pick a period */}
-      <div className="-mx-1 mb-4 flex gap-1.5 overflow-x-auto px-1 pb-1">
+      <div className="-mx-1 mb-3 flex gap-1.5 overflow-x-auto px-1 pb-1">
         {RANGES.map((r) => (
           <Chip key={r.key} active={rangeKey === r.key} onClick={() => setRangeKey(r.key)}>
             {r.label}
           </Chip>
         ))}
       </div>
+
+      {/* Custom date pickers */}
+      {rangeKey === "custom" && (
+        <div className="mb-4 flex flex-wrap items-center gap-2 text-[12px] font-medium text-ink-muted">
+          <label className="flex items-center gap-1.5">
+            From
+            <input
+              type="date"
+              value={customFrom}
+              max={todayStr}
+              onChange={(e) => setCustomFrom(e.target.value)}
+              className="rounded-lg border border-hairline bg-surface-1 px-2 py-1 text-ink"
+            />
+          </label>
+          <label className="flex items-center gap-1.5">
+            To
+            <input
+              type="date"
+              value={customTo}
+              max={todayStr}
+              onChange={(e) => setCustomTo(e.target.value)}
+              className="rounded-lg border border-hairline bg-surface-1 px-2 py-1 text-ink"
+            />
+          </label>
+        </div>
+      )}
 
       {err ? (
         <Empty>Couldn&apos;t load your sales. Tap the refresh button to try again.</Empty>
@@ -174,19 +225,21 @@ export function SalesReport({ tenantId }: { tenantId: string }) {
           Loading your sales…
         </div>
       ) : !data ? null : (
-        <div className="space-y-5">
+        <div className="space-y-4">
           {/* Hero — total sales for the chosen period */}
-          <div className="rounded-2xl border border-brand/25 bg-gradient-to-br from-brand-tint/60 to-surface-1 p-5">
-            <div className="flex items-center justify-between">
+          <div className="rounded-2xl border border-brand/25 bg-gradient-to-br from-brand-tint/60 to-surface-1 p-4 sm:p-5">
+            <div className="flex items-center justify-between gap-2">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-deep">
                 {methodLabel ? `${methodLabel} sales` : "Total sales"}
               </p>
-              <span className="text-[11px] font-medium text-ink-muted">{rangeLabel(rangeKey)}</span>
+              <span className="shrink-0 text-[11px] font-medium text-ink-muted">
+                {labelFor(rangeKey, bounds.from, bounds.to)}
+              </span>
             </div>
-            <p className="mt-1 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+            <p className="mt-1 text-[28px] font-bold leading-tight tracking-tight text-ink sm:text-4xl">
               {peso(data.kpis.revenue_cents)}
             </p>
-            <p className="mt-1 text-[13px] text-ink-muted">
+            <p className="mt-0.5 text-[13px] text-ink-muted">
               {num(data.kpis.orders)} {data.kpis.orders === 1 ? "order" : "orders"}
               <span className="mx-1.5 text-ink-subtle">·</span>
               {peso(data.kpis.avg_ticket_cents)} average sale
@@ -270,21 +323,15 @@ export function SalesReport({ tenantId }: { tenantId: string }) {
             </div>
           )}
 
-          {/* Sales by category (scoped to the active tab) */}
-          <div>
-            <p className="mb-2 text-[13px] font-semibold text-ink">
-              {activeTab === "separated" ? "Separated sales by group" : "Sales by category"}
-              {methodLabel ? (
-                <span className="font-normal text-ink-muted"> · {methodLabel}</span>
-              ) : null}
-            </p>
-            {cats.length === 0 ? (
-              <Empty>
-                {activeTab === "separated"
-                  ? "No separated sales in this period. In the app, flag a category or product type as “Separate in sales reports” (e.g. consigned Books) and they’ll show here on their own."
-                  : "No sales in this period yet. Try a wider range like “Last 7 days”."}
-              </Empty>
-            ) : (
+          {/* Sales by category — hidden when there's nothing to show */}
+          {cats.length > 0 && (
+            <div>
+              <p className="mb-2 text-[13px] font-semibold text-ink">
+                {activeTab === "separated" ? "Separated sales by group" : "Sales by category"}
+                {methodLabel ? (
+                  <span className="font-normal text-ink-muted"> · {methodLabel}</span>
+                ) : null}
+              </p>
               <div className="space-y-2.5">
                 {cats.map((c) => {
                   const pct = (c.cents / catTotal) * 100;
@@ -304,17 +351,15 @@ export function SalesReport({ tenantId }: { tenantId: string }) {
                   );
                 })}
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
-          {/* Best sellers */}
-          <div>
-            <p className="mb-2 flex items-center gap-1.5 text-[13px] font-semibold text-ink">
-              <Award size={14} className="text-brand-deep" /> Best sellers
-            </p>
-            {data.top_sellers.length === 0 ? (
-              <Empty>No sales in this period yet.</Empty>
-            ) : (
+          {/* Best sellers — hidden when there's nothing to show */}
+          {data.top_sellers.length > 0 && (
+            <div>
+              <p className="mb-2 flex items-center gap-1.5 text-[13px] font-semibold text-ink">
+                <Award size={14} className="text-brand-deep" /> Best sellers
+              </p>
               <ol className="space-y-2.5">
                 {data.top_sellers.map((s, i) => (
                   <li key={s.name} className="flex items-center gap-3">
@@ -331,8 +376,8 @@ export function SalesReport({ tenantId }: { tenantId: string }) {
                   </li>
                 ))}
               </ol>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Daily sales */}
           {data.daily.length > 1 && (
@@ -359,7 +404,7 @@ function Chip({
   return (
     <button
       onClick={onClick}
-      className={`shrink-0 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition ${
+      className={`shrink-0 whitespace-nowrap rounded-full border px-3 py-1 text-[12px] font-semibold transition ${
         active
           ? "border-brand bg-brand text-white"
           : "border-hairline bg-surface-1 text-ink-muted hover:text-ink"
