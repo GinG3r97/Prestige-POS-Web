@@ -34,6 +34,18 @@ export async function submitPunch(input: {
   result?: { employee_name: string; kind: string; at: string };
   error?: string;
 }> {
+  // Validate the selfie payload before it reaches the DB (a crafted direct
+  // POST could otherwise send a huge or non-image string).
+  const selfie = input.selfie ?? "";
+  if (selfie.length > 0) {
+    if (!/^data:image\/(jpeg|jpg|png|webp);base64,/i.test(selfie)) {
+      return { ok: false, error: "That photo didn't upload correctly. Try again." };
+    }
+    if (selfie.length > 3_000_000) {
+      return { ok: false, error: "Photo is too large. Please try again." };
+    }
+  }
+
   const supa = createClient();
   const { data, error } = await supa.rpc("record_attendance_punch", {
     p_store_code: input.code.trim(),
