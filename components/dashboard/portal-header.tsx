@@ -2,15 +2,18 @@ import Link from "next/link";
 import Image from "next/image";
 import { LogOut, ChevronLeft } from "lucide-react";
 import { signOut } from "@/app/portal-actions";
+import { PlanBadge } from "./bits";
 
 /** Sticky top bar for the admin + client portals. */
 export function PortalHeader({
   title,
   subtitle,
+  plan,
   back,
 }: {
   title: string;
   subtitle?: string;
+  plan?: string | null;
   back?: { href: string; label: string };
 }) {
   return (
@@ -30,7 +33,13 @@ export function PortalHeader({
           )}
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-ink">{title}</p>
-            {subtitle && <p className="truncate text-[11px] text-ink-subtle">{subtitle}</p>}
+            {plan ? (
+              <div className="mt-0.5">
+                <PlanBadge plan={plan} />
+              </div>
+            ) : (
+              subtitle && <p className="truncate text-[11px] text-ink-subtle">{subtitle}</p>
+            )}
           </div>
         </div>
         <form action={signOut}>

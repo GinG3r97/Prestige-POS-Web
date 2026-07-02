@@ -37,7 +37,7 @@ export default async function ClientPortalPage() {
   const d = await getTenantDetail(tenantId);
   return (
     <>
-      <PortalHeader title={d.tenant.business_name} subtitle="Your store" />
+      <PortalHeader title={d.tenant.business_name} plan={d.subscription?.plan ?? "trial"} />
       <main className="mx-auto max-w-4xl space-y-4 px-4 py-5">
         <Link
           href="/app/attendance"
