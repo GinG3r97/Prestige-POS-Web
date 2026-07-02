@@ -39,9 +39,9 @@ const plans: Plan[] = [
       "Senior & PWD discounts",
       "1 branch · 2 staff PINs",
     ],
-    cta: "Try Basic free",
-    href: "mailto:hello@prestigeitsolutions.tech?subject=Prestige%20POS%3A%20Start%20Basic",
-    note: "14-day free trial · no card needed",
+    cta: "Get Basic",
+    href: "/subscribe?plan=basic",
+    note: "Monthly or yearly · cancel anytime",
   },
   {
     id: "pro",
@@ -67,9 +67,9 @@ const plans: Plan[] = [
       "Multiple branches, one account",
       "Unlimited staff · Priority support",
     ],
-    cta: "Start 14-day free trial",
-    href: "mailto:hello@prestigeitsolutions.tech?subject=Prestige%20POS%3A%20Start%20Pro%20trial",
-    note: "No card needed · Cancel anytime",
+    cta: "Get Pro",
+    href: "/subscribe?plan=pro",
+    note: "Monthly or yearly · cancel anytime",
   },
 ];
 

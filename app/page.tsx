@@ -391,13 +391,13 @@ export default function Home() {
             </ul>
             <div className="mt-auto pt-8">
               <a
-                href="mailto:hello@prestigeitsolutions.tech?subject=Prestige%20POS%3A%20Start%20Basic"
+                href="/subscribe?plan=basic"
                 className="block rounded-full border border-hairline bg-surface-1 px-6 py-3 text-center text-sm font-semibold text-ink transition hover:bg-surface-3"
               >
-                Try Basic free
+                Get Basic
               </a>
               <p className="mt-2.5 text-center text-[11px] text-ink-subtle">
-                14-day free trial · no card needed
+                Monthly or yearly · cancel anytime
               </p>
             </div>
           </div>
@@ -447,10 +447,10 @@ export default function Home() {
             </ul>
             <div className="mt-auto pt-8">
               <a
-                href="mailto:hello@prestigeitsolutions.tech?subject=Prestige%20POS%3A%20Start%20Pro%20trial"
+                href="/subscribe?plan=pro"
                 className="block rounded-full bg-brand px-6 py-3 text-center text-sm font-semibold text-white shadow-card transition hover:bg-brand-deep"
               >
-                Start 14-day free trial
+                Get Pro
               </a>
               <p className="mt-2.5 text-center text-[11px] text-ink-subtle">
                 No card needed · Cancel anytime
