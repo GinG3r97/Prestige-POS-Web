@@ -3,14 +3,17 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { requestOtp } from "../login/actions";
-import { getMyStores, createCheckout, type Store } from "./actions";
+import { getMyStores, createCheckout, setCancel, type Store } from "./actions";
 
-type Plan = "basic" | "pro";
+type PlanKey = "trial" | "basic" | "pro";
+type PaidPlan = "basic" | "pro";
 type Cycle = "monthly" | "yearly";
 type Step = "loading" | "email" | "code" | "store" | "plan";
 
+const RANK: Record<string, number> = { trial: 0, basic: 1, pro: 2 };
+
 const PLANS: Record<
-  Plan,
+  PlanKey,
   {
     name: string;
     monthly: number;
@@ -20,6 +23,19 @@ const PLANS: Record<
     features: string[];
   }
 > = {
+  trial: {
+    name: "Trial",
+    monthly: 0,
+    yearly: 0,
+    tagline: "Free to explore Prestige POS.",
+    features: [
+      "Up to 20 items sold per day",
+      "Sell screen, receipts & discounts",
+      "Cash, GCash & QR Ph payments",
+      "1 branch · 2 staff PINs",
+      "Upgrade anytime",
+    ],
+  },
   basic: {
     name: "Basic",
     monthly: 499,
@@ -59,6 +75,14 @@ const PLANS: Record<
 };
 
 const peso = (n: number) => "₱" + n.toLocaleString("en-PH");
+const fmtDate = (iso: string | null) =>
+  iso
+    ? new Date(iso).toLocaleDateString("en-PH", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : null;
 
 export default function SubscribePage() {
   const supa = createClient();
@@ -67,17 +91,16 @@ export default function SubscribePage() {
   const [code, setCode] = useState("");
   const [stores, setStores] = useState<Store[]>([]);
   const [tenantId, setTenantId] = useState<string | null>(null);
-  const [plan, setPlan] = useState<Plan>("basic");
+  const [highlight, setHighlight] = useState<PaidPlan>("basic");
   const [cycle, setCycle] = useState<Cycle>("monthly");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [cancelled, setCancelled] = useState(false);
 
-  // Read ?plan / ?cancelled, and skip auth if already signed in.
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
     const p = q.get("plan");
-    if (p === "basic" || p === "pro") setPlan(p);
+    if (p === "basic" || p === "pro") setHighlight(p);
     if (q.get("cancelled")) setCancelled(true);
     (async () => {
       const mine = await getMyStores();
@@ -96,15 +119,17 @@ export default function SubscribePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  async function refresh() {
+    const mine = await getMyStores();
+    setStores(mine);
+  }
+
   async function sendCode() {
     setErr(null);
     setBusy(true);
     const res = await requestOtp(email.trim());
     setBusy(false);
-    if (!res.ok) {
-      setErr(res.error ?? "Could not send the code.");
-      return;
-    }
+    if (!res.ok) return setErr(res.error ?? "Could not send the code.");
     setStep("code");
   }
 
@@ -118,16 +143,14 @@ export default function SubscribePage() {
     });
     if (error) {
       setBusy(false);
-      setErr("That code didn't work. Please check and try again.");
-      return;
+      return setErr("That code didn't work. Please check and try again.");
     }
     const mine = await getMyStores();
     setBusy(false);
     setStores(mine);
     if (mine.length === 0) {
       setErr("This email isn't linked to a store yet. Use the email from your POS app.");
-      setStep("email");
-      return;
+      return setStep("email");
     }
     if (mine.length === 1) {
       setTenantId(mine[0].tenant_id);
@@ -137,11 +160,11 @@ export default function SubscribePage() {
     }
   }
 
-  async function pay() {
+  async function pay(target: PaidPlan) {
     if (!tenantId) return;
     setErr(null);
     setBusy(true);
-    const res = await createCheckout({ tenantId, plan, cycle });
+    const res = await createCheckout({ tenantId, plan: target, cycle });
     if (res.url) {
       window.location.href = res.url;
       return;
@@ -150,24 +173,50 @@ export default function SubscribePage() {
     setErr(res.error ?? "Could not start checkout.");
   }
 
+  async function downgrade() {
+    if (!tenantId) return;
+    setErr(null);
+    setBusy(true);
+    const res = await setCancel(tenantId, true);
+    if (!res.error) await refresh();
+    setBusy(false);
+    if (res.error) setErr(res.error);
+  }
+
+  async function keepPlan() {
+    if (!tenantId) return;
+    setErr(null);
+    setBusy(true);
+    const res = await setCancel(tenantId, false);
+    if (!res.error) await refresh();
+    setBusy(false);
+    if (res.error) setErr(res.error);
+  }
+
   const store = stores.find((s) => s.tenant_id === tenantId) ?? null;
+  const currentPlan: PlanKey = ((store?.plan as PlanKey) in RANK
+    ? (store?.plan as PlanKey)
+    : "trial") as PlanKey;
+  const currentRank = RANK[currentPlan] ?? 0;
+  const periodEnd = fmtDate(store?.current_period_end ?? null);
+  const scheduledTrial = !!store?.cancel_at_period_end;
 
   return (
     <div className="min-h-screen bg-surface-2">
-      <div className="mx-auto max-w-3xl px-5 py-10 sm:py-14">
+      <div className="mx-auto max-w-4xl px-5 py-10 sm:py-14">
         <header className="mb-8 text-center">
           <p className="text-[12px] font-semibold uppercase tracking-widest text-brand-deep">
             Prestige POS
           </p>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight text-ink">
-            Subscribe
+            {step === "plan" ? "Your plan" : "Subscribe"}
           </h1>
           <p className="mt-1 text-[13px] text-ink-muted">
-            Pick a plan and pay securely. Your store upgrades automatically.
+            Pick a plan and pay securely. Your store updates automatically.
           </p>
         </header>
 
-        {cancelled && step !== "loading" && (
+        {cancelled && step === "plan" && (
           <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] text-amber-800">
             Payment was cancelled. You can try again whenever you're ready.
           </div>
@@ -241,7 +290,7 @@ export default function SubscribePage() {
         {/* Step 3 — choose store */}
         {step === "store" && (
           <Card>
-            <Label>Choose the store to upgrade</Label>
+            <Label>Choose a store</Label>
             <div className="mt-3 space-y-2">
               {stores.map((s) => (
                 <button
@@ -269,23 +318,49 @@ export default function SubscribePage() {
           </Card>
         )}
 
-        {/* Step 4 — plans + pay */}
-        {step === "plan" && (
+        {/* Step 4 — manage plan */}
+        {step === "plan" && store && (
           <>
-            {store && (
-              <p className="mb-4 text-center text-[13px] text-ink-muted">
-                Upgrading{" "}
-                <strong className="text-ink">{store.business_name}</strong>
-                {stores.length > 1 && (
-                  <button
-                    onClick={() => setStep("store")}
-                    className="ml-2 text-brand-deep underline"
-                  >
-                    change
-                  </button>
-                )}
+            {/* current plan banner */}
+            <div className="mb-5 rounded-2xl border border-hairline bg-surface-1 p-4 shadow-card">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[12px] text-ink-muted">
+                    {store.business_name}
+                    {stores.length > 1 && (
+                      <button
+                        onClick={() => setStep("store")}
+                        className="ml-2 text-brand-deep underline"
+                      >
+                        change
+                      </button>
+                    )}
+                  </p>
+                  <p className="text-[15px] font-bold text-ink">
+                    {PLANS[currentPlan].name} plan
+                  </p>
+                </div>
+                <PlanBadge plan={currentPlan} />
+              </div>
+              <p className="mt-2 text-[12.5px] text-ink-muted">
+                {currentPlan === "trial"
+                  ? "Free plan. Upgrade anytime below."
+                  : scheduledTrial
+                    ? `Reverts to Trial on ${periodEnd}. You keep ${PLANS[currentPlan].name} until then.`
+                    : periodEnd
+                      ? `Active until ${periodEnd}.`
+                      : "Active."}
               </p>
-            )}
+              {scheduledTrial && (
+                <button
+                  onClick={keepPlan}
+                  disabled={busy}
+                  className="mt-3 rounded-full bg-brand px-4 py-2 text-[13px] font-semibold text-white transition hover:bg-brand-deep disabled:opacity-40"
+                >
+                  {busy ? "…" : `Keep my ${PLANS[currentPlan].name} plan`}
+                </button>
+              )}
+            </div>
 
             {/* cycle toggle */}
             <div className="mb-5 flex items-center justify-center gap-2">
@@ -297,39 +372,69 @@ export default function SubscribePage() {
               </Toggle>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              {(["basic", "pro"] as Plan[]).map((key) => {
+            {err && <ErrorText>{err}</ErrorText>}
+
+            {/* 3 tier cards */}
+            <div className="grid gap-4 lg:grid-cols-3">
+              {(["trial", "basic", "pro"] as PlanKey[]).map((key) => {
                 const p = PLANS[key];
-                const price = cycle === "monthly" ? p.monthly : p.yearly;
-                const on = plan === key;
+                const r = RANK[key];
+                const isCurrent = key === currentPlan;
+                const price = key === "trial" ? 0 : cycle === "monthly" ? p.monthly : p.yearly;
+                const recommended = key === highlight && r > currentRank;
+
+                // Decide the action for this card
+                let cta: React.ReactNode = null;
+                if (isCurrent) {
+                  cta = <Ghost disabled>Current plan</Ghost>;
+                } else if (key === "trial") {
+                  // downgrade target (current is paid)
+                  cta = scheduledTrial ? (
+                    <Ghost disabled>Scheduled</Ghost>
+                  ) : (
+                    <Ghost onClick={downgrade} disabled={busy}>
+                      Downgrade to Trial
+                    </Ghost>
+                  );
+                } else if (r > currentRank) {
+                  cta = (
+                    <Primary onClick={() => pay(key as PaidPlan)} disabled={busy}>
+                      {busy ? "…" : currentPlan === "trial" ? `Get ${p.name}` : `Upgrade to ${p.name}`}
+                    </Primary>
+                  );
+                } else {
+                  // lower paid tier than current (e.g. Pro → Basic)
+                  cta = <Ghost disabled>Included in {PLANS[currentPlan].name}</Ghost>;
+                }
+
                 return (
-                  <button
+                  <div
                     key={key}
-                    onClick={() => setPlan(key)}
-                    className={`rounded-2xl border p-5 text-left transition ${
-                      on
-                        ? "border-brand bg-brand-tint/40 ring-1 ring-brand/30"
-                        : "border-hairline bg-surface-1 hover:border-brand-soft"
+                    className={`flex flex-col rounded-2xl border p-5 ${
+                      isCurrent
+                        ? "border-brand bg-brand-tint/30"
+                        : recommended
+                          ? "border-brand-soft bg-surface-1 ring-1 ring-brand/20"
+                          : "border-hairline bg-surface-1"
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <h3 className="text-[15px] font-bold text-ink">{p.name}</h3>
-                      <span
-                        className={`grid h-5 w-5 place-items-center rounded-full border ${
-                          on ? "border-brand bg-brand text-white" : "border-hairline"
-                        }`}
-                      >
-                        {on ? "✓" : ""}
-                      </span>
+                      {isCurrent && (
+                        <span className="rounded-full bg-brand px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
+                          Current
+                        </span>
+                      )}
                     </div>
                     <p className="mt-2">
                       <span className="text-2xl font-bold text-ink">
-                        {peso(price)}
+                        {key === "trial" ? "Free" : peso(price)}
                       </span>
-                      <span className="text-[12px] text-ink-subtle">
-                        {" "}
-                        / {cycle === "monthly" ? "month" : "year"}
-                      </span>
+                      {key !== "trial" && (
+                        <span className="text-[12px] text-ink-subtle">
+                          {" "}/ {cycle === "monthly" ? "month" : "year"}
+                        </span>
+                      )}
                     </p>
                     <p className="mt-1 text-[12px] text-ink-muted">{p.tagline}</p>
                     {p.intro && (
@@ -337,39 +442,23 @@ export default function SubscribePage() {
                         {p.intro}
                       </p>
                     )}
-                    <ul className="mt-2 space-y-1.5">
+                    <ul className="mt-2 flex-1 space-y-1.5">
                       {p.features.map((f) => (
-                        <li
-                          key={f}
-                          className="flex gap-2 text-[12.5px] text-ink-muted"
-                        >
+                        <li key={f} className="flex gap-2 text-[12.5px] text-ink-muted">
                           <span className="text-brand">✓</span> {f}
                         </li>
                       ))}
                     </ul>
-                  </button>
+                    <div className="mt-5">{cta}</div>
+                  </div>
                 );
               })}
             </div>
 
-            {err && <ErrorText>{err}</ErrorText>}
-
-            <div className="mt-6 rounded-2xl border border-hairline bg-surface-1 p-5">
-              <div className="flex items-center justify-between">
-                <span className="text-[13px] text-ink-muted">
-                  {PLANS[plan].name} · {cycle === "monthly" ? "Monthly" : "Yearly"}
-                </span>
-                <span className="text-lg font-bold text-ink">
-                  {peso(cycle === "monthly" ? PLANS[plan].monthly : PLANS[plan].yearly)}
-                </span>
-              </div>
-              <Button onClick={pay} disabled={busy || !tenantId}>
-                {busy ? "Starting checkout…" : `Pay with PayMongo`}
-              </Button>
-              <p className="mt-3 text-center text-[11px] text-ink-subtle">
-                Secure checkout by PayMongo · cards, GCash, Maya. Cancel anytime.
-              </p>
-            </div>
+            <p className="mt-6 text-center text-[11px] text-ink-subtle">
+              Secure checkout by PayMongo · cards, GCash, Maya. Upgrades apply now;
+              downgrades take effect at the end of your paid period. No refunds.
+            </p>
           </>
         )}
       </div>
@@ -394,6 +483,23 @@ export default function SubscribePage() {
   );
 }
 
+function PlanBadge({ plan }: { plan: string }) {
+  const styles: Record<string, string> = {
+    pro: "bg-brand text-white",
+    basic: "bg-brand-tint text-brand-deep",
+    trial: "bg-amber-100 text-amber-700",
+  };
+  return (
+    <span
+      className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${
+        styles[plan] ?? "bg-surface-3 text-ink-muted"
+      }`}
+    >
+      {plan}
+    </span>
+  );
+}
+
 function Card({ children }: { children: React.ReactNode }) {
   return (
     <div className="mx-auto max-w-md rounded-2xl border border-hairline bg-surface-1 p-6 shadow-card">
@@ -409,7 +515,7 @@ function Label({ children }: { children: React.ReactNode }) {
   );
 }
 function ErrorText({ children }: { children: React.ReactNode }) {
-  return <p className="mt-3 text-[13px] text-red-600">{children}</p>;
+  return <p className="mb-3 text-[13px] text-red-600">{children}</p>;
 }
 function Button({
   children,
@@ -425,6 +531,44 @@ function Button({
       onClick={onClick}
       disabled={disabled}
       className="mt-4 w-full rounded-full bg-brand py-3 text-[14px] font-semibold text-white transition hover:bg-brand-deep disabled:opacity-40"
+    >
+      {children}
+    </button>
+  );
+}
+function Primary({
+  children,
+  onClick,
+  disabled,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className="w-full rounded-full bg-brand py-2.5 text-[13.5px] font-semibold text-white transition hover:bg-brand-deep disabled:opacity-40"
+    >
+      {children}
+    </button>
+  );
+}
+function Ghost({
+  children,
+  onClick,
+  disabled,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className="w-full rounded-full border border-hairline bg-surface-1 py-2.5 text-[13.5px] font-semibold text-ink-muted transition enabled:hover:border-brand enabled:hover:text-ink disabled:opacity-60"
     >
       {children}
     </button>

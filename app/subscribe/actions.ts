@@ -10,6 +10,7 @@ export type Store = {
   plan: string;
   status: string;
   current_period_end: string | null;
+  cancel_at_period_end: boolean;
 };
 
 /** Stores the signed-in owner/co-owner can manage. Empty if not signed in. */
@@ -18,6 +19,20 @@ export async function getMyStores(): Promise<Store[]> {
   const { data, error } = await supa.rpc("my_stores");
   if (error) return [];
   return (data ?? []) as Store[];
+}
+
+/** Schedule a downgrade to Trial at period end (or undo it). */
+export async function setCancel(
+  tenantId: string,
+  cancel: boolean,
+): Promise<{ ok?: boolean; error?: string }> {
+  const supa = createClient();
+  const { error } = await supa.rpc("set_subscription_cancel", {
+    p_tenant: tenantId,
+    p_cancel: cancel,
+  });
+  if (error) return { error: "Couldn't update your plan. Please try again." };
+  return { ok: true };
 }
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
