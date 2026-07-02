@@ -3,6 +3,23 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
+/**
+ * Defense-in-depth: every admin RPC also enforces is_admin() in-DB, but server
+ * actions are plain POST endpoints callable by any signed-in user, so we re-check
+ * here too. Fail closed.
+ */
+async function ensureAdmin(
+  supa: ReturnType<typeof createClient>,
+): Promise<string | null> {
+  const {
+    data: { user },
+  } = await supa.auth.getUser();
+  if (!user) return "Please sign in.";
+  const { data } = await supa.rpc("is_admin");
+  if (data !== true) return "Not authorized.";
+  return null;
+}
+
 export type SubscriptionInput = {
   tenantId: string;
   plan: string;
@@ -16,6 +33,8 @@ export async function updateSubscription(
   input: SubscriptionInput,
 ): Promise<{ ok: boolean; error?: string }> {
   const supa = createClient();
+  const denied = await ensureAdmin(supa);
+  if (denied) return { ok: false, error: denied };
   const { error } = await supa.rpc("admin_update_subscription", {
     p_tenant: input.tenantId,
     p_plan: input.plan,
@@ -36,6 +55,8 @@ export async function setSubscriptionStatus(
   status: "trialing" | "active" | "past_due" | "paused" | "canceled",
 ): Promise<{ ok: boolean; error?: string }> {
   const supa = createClient();
+  const denied = await ensureAdmin(supa);
+  if (denied) return { ok: false, error: denied };
   const { error } = await supa.rpc("admin_set_subscription_status", {
     p_tenant: tenantId,
     p_status: status,
@@ -53,6 +74,8 @@ export async function resolvePayment(
   note?: string,
 ): Promise<{ ok: boolean; error?: string }> {
   const supa = createClient();
+  const denied = await ensureAdmin(supa);
+  if (denied) return { ok: false, error: denied };
   const { error } = await supa.rpc("admin_resolve_payment", {
     p_id: id,
     p_action: action,
@@ -70,6 +93,8 @@ export async function extendAccess(
   days: number,
 ): Promise<{ ok: boolean; error?: string }> {
   const supa = createClient();
+  const denied = await ensureAdmin(supa);
+  if (denied) return { ok: false, error: denied };
   const { error } = await supa.rpc("admin_extend_access", {
     p_tenant: tenantId,
     p_days: days,

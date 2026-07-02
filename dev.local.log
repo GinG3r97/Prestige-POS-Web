@@ -1,0 +1,27 @@
+
+> prestige-pos-web@1.0.0 dev
+> next dev
+
+  ▲ Next.js 14.2.5
+  - Local:        http://localhost:3000
+  - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 2.6s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 936ms (128 modules)
+ ○ Compiling /app ...
+ ✓ Compiled /app in 1911ms (936 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (244kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (102kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ GET /app 307 in 4015ms
+ ○ Compiling /login ...
+ ✓ Compiled /login in 926ms (955 modules)
+ POST /app 303 in 4709ms
+ GET /login 200 in 1095ms
+ ✓ Compiled /_not-found in 316ms (958 modules)
+ GET /log 404 in 382ms
+ ✓ Compiled / in 248ms (1018 modules)
+ GET / 200 in 486ms
+ ✓ Compiled /upgrade in 470ms (1034 modules)
+ GET /upgrade 200 in 627ms
