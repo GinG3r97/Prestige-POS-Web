@@ -64,6 +64,9 @@ export async function submitPunch(input: {
 function mapErr(m: string): string {
   const far = m.match(/TOO_FAR:(\d+)/);
   if (far) return `You're about ${far[1]} m from the store — you can only clock in at the store.`;
+  const locked = m.match(/LOCKED:(\d+)/);
+  if (locked)
+    return `Too many wrong PINs. Try again in about ${locked[1]} minute${locked[1] === "1" ? "" : "s"}.`;
   if (m.includes("BAD_PIN")) return "Wrong PIN — try again.";
   if (m.includes("EMPLOYEE_NOT_FOUND")) return "Pick your name first.";
   if (m.includes("SELFIE_REQUIRED")) return "Take a selfie first.";
