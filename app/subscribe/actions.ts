@@ -42,6 +42,9 @@ function friendly(msg: string): string {
     return "You don't have access to that store.";
   if (msg.includes("BAD_PLAN")) return "Please pick Basic or Pro.";
   if (msg.includes("BAD_CYCLE")) return "Please pick monthly or yearly.";
+  if (msg.includes("BAD_QTY")) return "Please choose between 1 and 20 branches.";
+  if (msg.includes("PRO_REQUIRED"))
+    return "Additional branches are available on the Pro plan.";
   return "Something went wrong. Please try again.";
 }
 
@@ -90,6 +93,64 @@ export async function createCheckout(input: {
         request_id: req.id,
         tenant_id: input.tenantId,
         plan: input.plan,
+        cycle: input.cycle,
+      },
+    });
+    return { url };
+  } catch (e) {
+    return { error: (e as Error).message };
+  }
+}
+
+/**
+ * Create a pending request + PayMongo checkout for N additional branches on a
+ * Pro store. Same pipeline as a plan upgrade: the webhook calls
+ * activate_subscription_by_request, which increments extra_branches. Pricing is
+ * computed server-side in start_branch_addon_checkout.
+ */
+export async function createBranchCheckout(input: {
+  tenantId: string;
+  qty: number;
+  cycle: "monthly" | "yearly";
+}): Promise<{ url?: string; error?: string }> {
+  const supa = createClient();
+  const {
+    data: { user },
+  } = await supa.auth.getUser();
+  if (!user) return { error: "Your session expired. Please sign in again." };
+
+  const { data, error } = await supa.rpc("start_branch_addon_checkout", {
+    p_tenant: input.tenantId,
+    p_qty: input.qty,
+    p_cycle: input.cycle,
+  });
+  if (error) return { error: friendly(error.message) };
+
+  const req = data as {
+    id: string;
+    amount_cents: number;
+    qty: number;
+    business_name: string;
+    cycle: string;
+  };
+
+  const origin =
+    process.env.NEXT_PUBLIC_SITE_URL || "https://pos.prestigeitsolutions.tech";
+  const label = `${req.qty} additional branch${req.qty > 1 ? "es" : ""} (${req.cycle})`;
+
+  try {
+    const { url } = await createCheckoutSession({
+      amountCents: req.amount_cents,
+      planLabel: `Prestige POS — ${label}`,
+      description: `${req.business_name}: ${label}`,
+      email: user.email ?? undefined,
+      successUrl: `${origin}/subscribe/success`,
+      cancelUrl: `${origin}/subscribe?branches=1&cancelled=1`,
+      metadata: {
+        request_id: req.id,
+        tenant_id: input.tenantId,
+        kind: "branch_addon",
+        qty: String(req.qty),
         cycle: input.cycle,
       },
     });

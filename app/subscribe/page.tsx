@@ -3,7 +3,13 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { requestOtp } from "../login/actions";
-import { getMyStores, createCheckout, setCancel, type Store } from "./actions";
+import {
+  getMyStores,
+  createCheckout,
+  createBranchCheckout,
+  setCancel,
+  type Store,
+} from "./actions";
 
 type PlanKey = "trial" | "basic" | "pro";
 type PaidPlan = "basic" | "pro";
@@ -68,7 +74,7 @@ const PLANS: Record<
       "Staff roles, PINs & schedules",
       "Payroll & timekeeping (PH-ready)",
       "Bookings & timed sessions",
-      "Multiple branches, one account",
+      "1 branch included, add more anytime",
       "Unlimited staff · Priority support",
     ],
   },
@@ -96,6 +102,7 @@ export default function SubscribePage() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [cancelled, setCancelled] = useState(false);
+  const [branchQty, setBranchQty] = useState(1);
 
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
@@ -165,6 +172,19 @@ export default function SubscribePage() {
     setErr(null);
     setBusy(true);
     const res = await createCheckout({ tenantId, plan: target, cycle });
+    if (res.url) {
+      window.location.href = res.url;
+      return;
+    }
+    setBusy(false);
+    setErr(res.error ?? "Could not start checkout.");
+  }
+
+  async function payBranches() {
+    if (!tenantId) return;
+    setErr(null);
+    setBusy(true);
+    const res = await createBranchCheckout({ tenantId, qty: branchQty, cycle });
     if (res.url) {
       window.location.href = res.url;
       return;
@@ -454,6 +474,61 @@ export default function SubscribePage() {
                 );
               })}
             </div>
+
+            {currentPlan === "pro" && (
+              <div className="mt-6 rounded-2xl border border-hairline bg-surface-1 p-5 shadow-card">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="text-[15px] font-bold text-ink">
+                      Additional branches
+                    </h3>
+                    <p className="mt-1 text-[12.5px] text-ink-muted">
+                      Pro includes 1 branch. Add more locations, each billed{" "}
+                      {cycle === "monthly" ? "monthly" : "yearly"}.
+                    </p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-brand-tint px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-deep">
+                    Pro
+                  </span>
+                </div>
+                <div className="mt-4 flex flex-wrap items-center gap-4">
+                  <div className="flex items-center rounded-full border border-hairline">
+                    <button
+                      onClick={() => setBranchQty((q) => Math.max(1, q - 1))}
+                      className="px-3.5 py-1.5 text-[16px] text-ink-muted hover:text-ink"
+                      aria-label="Fewer branches"
+                    >
+                      −
+                    </button>
+                    <span className="min-w-[2ch] text-center text-[14px] font-semibold text-ink">
+                      {branchQty}
+                    </span>
+                    <button
+                      onClick={() => setBranchQty((q) => Math.min(20, q + 1))}
+                      className="px-3.5 py-1.5 text-[16px] text-ink-muted hover:text-ink"
+                      aria-label="More branches"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <div className="text-[13px] text-ink-muted">
+                    <span className="font-semibold text-ink">
+                      {peso((cycle === "monthly" ? 499 : 4990) * branchQty)}
+                    </span>{" "}
+                    / {cycle === "monthly" ? "month" : "year"}
+                  </div>
+                  <button
+                    onClick={payBranches}
+                    disabled={busy}
+                    className="ml-auto rounded-full bg-brand px-5 py-2.5 text-[13.5px] font-semibold text-white transition hover:bg-brand-deep disabled:opacity-40"
+                  >
+                    {busy
+                      ? "…"
+                      : `Add ${branchQty} branch${branchQty > 1 ? "es" : ""}`}
+                  </button>
+                </div>
+              </div>
+            )}
 
             <p className="mt-6 text-center text-[11px] text-ink-subtle">
               Secure checkout by PayMongo · cards, GCash, Maya. Upgrades apply now;
