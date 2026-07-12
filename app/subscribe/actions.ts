@@ -21,6 +21,26 @@ export async function getMyStores(): Promise<Store[]> {
   return (data ?? []) as Store[];
 }
 
+/**
+ * Identify-first gate: look up a store's subscription by store code + the
+ * email used in the POS app. Returns null unless BOTH match (the RPC checks
+ * the email against the store's owner/members), so codes can't be probed.
+ * Pre-auth by design — managing/paying still requires signing in.
+ */
+export async function lookupSubscription(
+  storeCode: string,
+  email: string,
+): Promise<Store | null> {
+  const supa = createClient();
+  const { data, error } = await supa.rpc("subscription_lookup", {
+    p_store_code: storeCode.trim(),
+    p_email: email.trim(),
+  });
+  if (error || !data) return null;
+  const rows = data as Store[];
+  return rows.length > 0 ? rows[0] : null;
+}
+
 /** Schedule a downgrade to Trial at period end (or undo it). */
 export async function setCancel(
   tenantId: string,

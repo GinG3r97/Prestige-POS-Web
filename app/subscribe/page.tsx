@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { requestOtp } from "../login/actions";
 import {
-  getMyStores,
+  lookupSubscription,
   createCheckout,
   createBranchCheckout,
   setCancel,
@@ -14,7 +14,8 @@ import {
 type PlanKey = "trial" | "basic" | "pro";
 type PaidPlan = "basic" | "pro";
 type Cycle = "monthly" | "yearly";
-type Step = "loading" | "email" | "code" | "store" | "plan";
+// identify → (code, only when not already signed in as that email) → plan
+type Step = "identify" | "code" | "plan";
 
 const RANK: Record<string, number> = { trial: 0, basic: 1, pro: 2 };
 
@@ -92,47 +93,72 @@ const fmtDate = (iso: string | null) =>
 
 export default function SubscribePage() {
   const supa = createClient();
-  const [step, setStep] = useState<Step>("loading");
+  const [step, setStep] = useState<Step>("identify");
+  const [storeCode, setStoreCode] = useState("");
   const [email, setEmail] = useState("");
+  // Email of the browser's existing session (skips the OTP when it matches).
+  const [sessionEmail, setSessionEmail] = useState<string | null>(null);
   const [code, setCode] = useState("");
-  const [stores, setStores] = useState<Store[]>([]);
-  const [tenantId, setTenantId] = useState<string | null>(null);
+  const [store, setStore] = useState<Store | null>(null);
   const [highlight, setHighlight] = useState<PaidPlan>("basic");
   const [cycle, setCycle] = useState<Cycle>("monthly");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [cancelled, setCancelled] = useState(false);
+
   const [branchQty, setBranchQty] = useState(1);
 
   useEffect(() => {
+    // Read the deep-link params, then CLEAN the URL — the address bar shows
+    // a plain /subscribe from here on.
     const q = new URLSearchParams(window.location.search);
     const p = q.get("plan");
     if (p === "basic" || p === "pro") setHighlight(p);
     if (q.get("cancelled")) setCancelled(true);
+    if (window.location.search) {
+      window.history.replaceState({}, "", "/subscribe");
+    }
+    // Prefill the email from an existing portal session (no auto-jump — the
+    // store code + email check always comes first).
     (async () => {
-      const mine = await getMyStores();
-      if (mine.length > 0) {
-        setStores(mine);
-        if (mine.length === 1) {
-          setTenantId(mine[0].tenant_id);
-          setStep("plan");
-        } else {
-          setStep("store");
-        }
-      } else {
-        setStep("email");
+      const {
+        data: { user },
+      } = await supa.auth.getUser();
+      if (user?.email) {
+        setSessionEmail(user.email.toLowerCase());
+        setEmail(user.email);
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function refresh() {
-    const mine = await getMyStores();
-    setStores(mine);
+  const canCheck = storeCode.trim().length >= 4 && email.includes("@");
+
+  /** Step 1 — check the store code + email and show the current subscription. */
+  async function check() {
+    setErr(null);
+    setStore(null);
+    setBusy(true);
+    const found = await lookupSubscription(storeCode, email);
+    setBusy(false);
+    if (!found) {
+      setErr(
+        "That store code and email don't match. Use the Store ID from the app " +
+          "(Settings → Subscription) and the email you sign in with.",
+      );
+      return;
+    }
+    setStore(found);
   }
 
-  async function sendCode() {
+  /** Step 2 — manage: skip the OTP when the session already matches. */
+  async function manage() {
+    if (!store) return;
     setErr(null);
+    if (sessionEmail && sessionEmail === email.trim().toLowerCase()) {
+      setStep("plan");
+      return;
+    }
     setBusy(true);
     const res = await requestOtp(email.trim());
     setBusy(false);
@@ -148,30 +174,35 @@ export default function SubscribePage() {
       token: code.trim(),
       type: "email",
     });
+    setBusy(false);
     if (error) {
-      setBusy(false);
       return setErr("That code didn't work. Please check and try again.");
     }
-    const mine = await getMyStores();
-    setBusy(false);
-    setStores(mine);
-    if (mine.length === 0) {
-      setErr("This email isn't linked to a store yet. Use the email from your POS app.");
-      return setStep("email");
-    }
-    if (mine.length === 1) {
-      setTenantId(mine[0].tenant_id);
-      setStep("plan");
-    } else {
-      setStep("store");
-    }
+    setSessionEmail(email.trim().toLowerCase());
+    setStep("plan");
+  }
+
+  /** Re-pull the summary after a plan action (cancel / keep). */
+  async function refresh() {
+    const found = await lookupSubscription(storeCode, email);
+    if (found) setStore(found);
+  }
+
+  function changeStore() {
+    setStore(null);
+    setErr(null);
+    setStep("identify");
   }
 
   async function pay(target: PaidPlan) {
-    if (!tenantId) return;
+    if (!store) return;
     setErr(null);
     setBusy(true);
-    const res = await createCheckout({ tenantId, plan: target, cycle });
+    const res = await createCheckout({
+      tenantId: store.tenant_id,
+      plan: target,
+      cycle,
+    });
     if (res.url) {
       window.location.href = res.url;
       return;
@@ -181,10 +212,14 @@ export default function SubscribePage() {
   }
 
   async function payBranches() {
-    if (!tenantId) return;
+    if (!store) return;
     setErr(null);
     setBusy(true);
-    const res = await createBranchCheckout({ tenantId, qty: branchQty, cycle });
+    const res = await createBranchCheckout({
+      tenantId: store.tenant_id,
+      qty: branchQty,
+      cycle,
+    });
     if (res.url) {
       window.location.href = res.url;
       return;
@@ -194,32 +229,41 @@ export default function SubscribePage() {
   }
 
   async function downgrade() {
-    if (!tenantId) return;
+    if (!store) return;
     setErr(null);
     setBusy(true);
-    const res = await setCancel(tenantId, true);
+    const res = await setCancel(store.tenant_id, true);
     if (!res.error) await refresh();
     setBusy(false);
     if (res.error) setErr(res.error);
   }
 
   async function keepPlan() {
-    if (!tenantId) return;
+    if (!store) return;
     setErr(null);
     setBusy(true);
-    const res = await setCancel(tenantId, false);
+    const res = await setCancel(store.tenant_id, false);
     if (!res.error) await refresh();
     setBusy(false);
     if (res.error) setErr(res.error);
   }
 
-  const store = stores.find((s) => s.tenant_id === tenantId) ?? null;
   const currentPlan: PlanKey = ((store?.plan as PlanKey) in RANK
     ? (store?.plan as PlanKey)
     : "trial") as PlanKey;
   const currentRank = RANK[currentPlan] ?? 0;
   const periodEnd = fmtDate(store?.current_period_end ?? null);
   const scheduledTrial = !!store?.cancel_at_period_end;
+
+  const statusLine = !store
+    ? ""
+    : currentPlan === "trial"
+      ? "Free plan. Upgrade anytime."
+      : scheduledTrial
+        ? `Reverts to Trial on ${periodEnd}. You keep ${PLANS[currentPlan].name} until then.`
+        : periodEnd
+          ? `Active until ${periodEnd}.`
+          : "Active.";
 
   return (
     <div className="min-h-screen bg-surface-2">
@@ -229,51 +273,98 @@ export default function SubscribePage() {
             Prestige POS
           </p>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight text-ink">
-            {step === "plan" ? "Your plan" : "Subscribe"}
+            {step === "plan" ? "Your plan" : "Manage your subscription"}
           </h1>
           <p className="mt-1 text-[13px] text-ink-muted">
-            Pick a plan and pay securely. Your store updates automatically.
+            {step === "plan"
+              ? "Pick a plan and pay securely. Your store updates automatically."
+              : "Enter your Store ID and email to check your current plan."}
           </p>
         </header>
 
-        {cancelled && step === "plan" && (
-          <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] text-amber-800">
+        {cancelled && (
+          <div className="mx-auto mb-5 max-w-md rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] text-amber-800">
             Payment was cancelled. You can try again whenever you're ready.
           </div>
         )}
 
-        {step === "loading" && (
+        {/* Step 1 — identify: store code + email, then the summary */}
+        {step === "identify" && (
           <Card>
-            <p className="py-10 text-center text-[14px] text-ink-muted">Loading…</p>
-          </Card>
-        )}
-
-        {/* Step 1 — email */}
-        {step === "email" && (
-          <Card>
-            <Label>Your email</Label>
-            <p className="mb-3 text-[13px] text-ink-muted">
-              Use the email you sign in with on the Prestige POS app. We'll send
-              a 6-digit code.
+            <Label>Store ID</Label>
+            <p className="mb-2 text-[13px] text-ink-muted">
+              Find it in the app under <strong className="text-ink">Settings → Subscription</strong>.
             </p>
             <input
-              type="email"
-              inputMode="email"
               autoFocus
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && email && sendCode()}
-              placeholder="you@example.com"
-              className="field"
+              value={storeCode}
+              onChange={(e) => {
+                setStoreCode(e.target.value.toUpperCase());
+                setStore(null);
+              }}
+              placeholder="PR-XXXXXX"
+              className="field font-mono tracking-wider"
             />
+            <div className="mt-4">
+              <Label>Email</Label>
+              <p className="mb-2 text-[13px] text-ink-muted">
+                The email you sign in with on the Prestige POS app.
+              </p>
+              <input
+                type="email"
+                inputMode="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setStore(null);
+                }}
+                onKeyDown={(e) => e.key === "Enter" && canCheck && check()}
+                placeholder="you@example.com"
+                className="field"
+              />
+            </div>
             {err && <ErrorText>{err}</ErrorText>}
-            <Button onClick={sendCode} disabled={busy || !email.trim()}>
-              {busy ? "Sending…" : "Send code"}
-            </Button>
+
+            {!store && (
+              <Button onClick={check} disabled={busy || !canCheck}>
+                {busy ? "Checking…" : "Check subscription"}
+              </Button>
+            )}
+
+            {/* Found — current subscription summary */}
+            {store && (
+              <div className="mt-5 rounded-xl border border-brand-soft bg-brand-tint/30 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-[14px] font-bold text-ink">
+                      {store.business_name}
+                    </p>
+                    <p className="text-[12px] text-ink-subtle">
+                      Store {store.store_code}
+                    </p>
+                  </div>
+                  <PlanBadge plan={currentPlan} />
+                </div>
+                <p className="mt-2 text-[12.5px] text-ink-muted">
+                  {PLANS[currentPlan].name} plan · {statusLine}
+                </p>
+                <button
+                  onClick={manage}
+                  disabled={busy}
+                  className="mt-3 w-full rounded-full bg-brand py-2.5 text-[13.5px] font-semibold text-white transition hover:bg-brand-deep disabled:opacity-40"
+                >
+                  {busy
+                    ? "…"
+                    : sessionEmail === email.trim().toLowerCase()
+                      ? "Manage plan"
+                      : "Continue — we'll email you a code"}
+                </button>
+              </div>
+            )}
           </Card>
         )}
 
-        {/* Step 2 — code */}
+        {/* Step 2 — code (only when the browser isn't signed in as that email) */}
         {step === "code" && (
           <Card>
             <Label>Enter the code</Label>
@@ -298,47 +389,16 @@ export default function SubscribePage() {
               onClick={() => {
                 setCode("");
                 setErr(null);
-                setStep("email");
+                setStep("identify");
               }}
               className="mt-3 w-full text-center text-[13px] text-ink-muted hover:text-ink"
             >
-              Use a different email
+              Back
             </button>
           </Card>
         )}
 
-        {/* Step 3 — choose store */}
-        {step === "store" && (
-          <Card>
-            <Label>Choose a store</Label>
-            <div className="mt-3 space-y-2">
-              {stores.map((s) => (
-                <button
-                  key={s.tenant_id}
-                  onClick={() => {
-                    setTenantId(s.tenant_id);
-                    setStep("plan");
-                  }}
-                  className="flex w-full items-center justify-between rounded-xl border border-hairline bg-surface-1 px-4 py-3 text-left transition hover:border-brand"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate text-[14px] font-semibold text-ink">
-                      {s.business_name}
-                    </p>
-                    <p className="text-[12px] text-ink-subtle">
-                      {s.store_code ? `Store ${s.store_code}` : "Store"}
-                    </p>
-                  </div>
-                  <span className="shrink-0 rounded-full bg-surface-3 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-ink-muted">
-                    {s.plan}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </Card>
-        )}
-
-        {/* Step 4 — manage plan */}
+        {/* Step 3 — manage plan */}
         {step === "plan" && store && (
           <>
             {/* current plan banner */}
@@ -347,14 +407,15 @@ export default function SubscribePage() {
                 <div className="min-w-0">
                   <p className="text-[12px] text-ink-muted">
                     {store.business_name}
-                    {stores.length > 1 && (
-                      <button
-                        onClick={() => setStep("store")}
-                        className="ml-2 text-brand-deep underline"
-                      >
-                        change
-                      </button>
-                    )}
+                    <span className="ml-1.5 text-ink-subtle">
+                      · Store {store.store_code}
+                    </span>
+                    <button
+                      onClick={changeStore}
+                      className="ml-2 text-brand-deep underline"
+                    >
+                      change
+                    </button>
                   </p>
                   <p className="text-[15px] font-bold text-ink">
                     {PLANS[currentPlan].name} plan
@@ -362,15 +423,7 @@ export default function SubscribePage() {
                 </div>
                 <PlanBadge plan={currentPlan} />
               </div>
-              <p className="mt-2 text-[12.5px] text-ink-muted">
-                {currentPlan === "trial"
-                  ? "Free plan. Upgrade anytime below."
-                  : scheduledTrial
-                    ? `Reverts to Trial on ${periodEnd}. You keep ${PLANS[currentPlan].name} until then.`
-                    : periodEnd
-                      ? `Active until ${periodEnd}.`
-                      : "Active."}
-              </p>
+              <p className="mt-2 text-[12.5px] text-ink-muted">{statusLine}</p>
               {scheduledTrial && (
                 <button
                   onClick={keepPlan}
@@ -590,7 +643,7 @@ function Label({ children }: { children: React.ReactNode }) {
   );
 }
 function ErrorText({ children }: { children: React.ReactNode }) {
-  return <p className="mb-3 text-[13px] text-red-600">{children}</p>;
+  return <p className="mb-3 mt-3 text-[13px] text-red-600">{children}</p>;
 }
 function Button({
   children,
