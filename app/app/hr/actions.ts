@@ -117,10 +117,35 @@ const rows2csv = (rows: unknown[][]): string =>
 const money = (centavos: number) => (centavos / 100).toFixed(2);
 /** Pesos stored as numeric → same shape. */
 const money0 = (pesos: number) => (pesos ?? 0).toFixed(2);
-const hours = (min: number) => (min / 60).toFixed(2);
 
-const hhmm = (m: number | null) =>
-  m == null ? "" : `${String(Math.floor(m / 60) % 24).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+/**
+ * "8 hours and 8 minutes" — what the owner actually reads.
+ * Kept alongside a decimal column wherever the figure needs summing, because
+ * a spreadsheet can't add a sentence.
+ */
+function dur(min: number): string {
+  const m = Math.max(0, Math.round(min));
+  if (m === 0) return "—";
+  const h = Math.floor(m / 60);
+  const r = m % 60;
+  const hPart = h > 0 ? `${h} ${h === 1 ? "hour" : "hours"}` : "";
+  const mPart = r > 0 ? `${r} ${r === 1 ? "minute" : "minutes"}` : "";
+  if (hPart && mPart) return `${hPart} and ${mPart}`;
+  return hPart || mPart;
+}
+/** Decimal hours for the columns a bookkeeper sums. */
+const hoursDec = (min: number) => (min / 60).toFixed(2);
+/** Same as dur(), for values already stored as decimal hours. */
+const durH = (h: number) => dur(Math.round((h ?? 0) * 60));
+
+/** Minutes-from-midnight → "7:30 AM". Handles a shift running past midnight. */
+function time12(m: number | null): string {
+  if (m == null) return "";
+  const h24 = Math.floor(m / 60) % 24;
+  const ap = h24 < 12 ? "AM" : "PM";
+  const h = h24 % 12 === 0 ? 12 : h24 % 12;
+  return `${h}:${String(m % 60).padStart(2, "0")} ${ap}`;
+}
 
 const DAY_STATUS: Record<string, string> = {
   worked: "Worked", restday: "Rest day worked", dayoff: "Day off",
@@ -159,14 +184,14 @@ export async function exportPayrollCsv(runId: string): Promise<ExportFile | null
 
   const head = [
     "Employee", "Role", "Pay basis", "Rate",
-    "Hours worked", "Hourly equivalent",
-    "OT hours", "OT rate x", "OT pay",
-    "Rest day hrs", "Rest day pay", "Night diff hrs", "Night diff pay",
-    "Holiday prem hrs", "Holiday prem pay",
+    "Hours worked", "Hours (decimal)", "Hourly equivalent",
+    "Overtime", "OT hours (decimal)", "OT rate x", "OT pay",
+    "Rest day", "Rest day pay", "Night differential", "Night diff pay",
+    "Holiday premium", "Holiday prem pay",
     "Bonus", "GROSS",
     "SSS", "PhilHealth", "Pag-IBIG", "Statutory total",
-    "Undertime hrs", "Undertime deduction",
-    "Late (min)", "Absent days", "Absence deduction",
+    "Undertime", "Undertime deduction",
+    "Late", "Absent days", "Absence deduction",
     "Other deductions", "Total deductions", "NET PAY",
   ];
 
@@ -179,16 +204,16 @@ export async function exportPayrollCsv(runId: string): Promise<ExportFile | null
       : s.monthly_salary;
     return [
       s.employee_name, s.employee_role, COMP_LABELS[s.compensation_type], money0(rate),
-      s.hours_worked, hourlyEquivalent(s, rhpd).toFixed(2),
-      s.ot_hours, s.ot_multiplier, money(otPayCentavos(s, rhpd)),
-      s.restday_hours, money(restdayPremiumCentavos(s, rhpd)),
-      s.nightdiff_hours, money(nightdiffPremiumCentavos(s, rhpd)),
-      s.holiday_premium_hours, money(holidayPremiumCentavos(s, rhpd)),
+      durH(s.hours_worked), s.hours_worked, hourlyEquivalent(s, rhpd).toFixed(2),
+      durH(s.ot_hours), s.ot_hours, s.ot_multiplier, money(otPayCentavos(s, rhpd)),
+      durH(s.restday_hours), money(restdayPremiumCentavos(s, rhpd)),
+      durH(s.nightdiff_hours), money(nightdiffPremiumCentavos(s, rhpd)),
+      durH(s.holiday_premium_hours), money(holidayPremiumCentavos(s, rhpd)),
       money0(s.bonus), money(gross),
       money(sssCentavos(s, k)), money(philhealthCentavos(s, k)), money(pagibigCentavos(s, k)),
       money(statutoryCentavos(s, k)),
-      s.undertime_hours, money(undertimeCentavos(s, rhpd)),
-      s.late_minutes, s.absent_days, money(absenceDeductionCentavos(s)),
+      durH(s.undertime_hours), money(undertimeCentavos(s, rhpd)),
+      dur(s.late_minutes), s.absent_days, money(absenceDeductionCentavos(s)),
       money0(s.deductions), money(gross - net), money(net),
     ];
   });
@@ -196,13 +221,13 @@ export async function exportPayrollCsv(runId: string): Promise<ExportFile | null
   // Pad the TOTAL row so each figure sits under its own column.
   const total = new Array(head.length).fill("");
   total[0] = "TOTAL";
-  total[8] = money(totals.ot);
-  total[16] = money(totals.gross);
-  total[20] = money(totals.stat);
-  total[22] = money(totals.ut);
-  total[25] = money(totals.abs);
-  total[27] = money(totals.gross - totals.net);
-  total[28] = money(totals.net);
+  total[10] = money(totals.ot);
+  total[18] = money(totals.gross);
+  total[22] = money(totals.stat);
+  total[24] = money(totals.ut);
+  total[27] = money(totals.abs);
+  total[29] = money(totals.gross - totals.net);
+  total[30] = money(totals.net);
 
   const csv = rows2csv([
     ...titleBlock("PAYROLL RUN", [
@@ -211,7 +236,7 @@ export async function exportPayrollCsv(runId: string): Promise<ExportFile | null
       ["Status", run.status.toUpperCase()],
       ["Employees", String(run.slips.length)],
       ["Basis", `${rhpd} regular hours/day, 26 days/month for hourly equivalent`],
-      ["Note", "All peso amounts are plain numbers so they can be summed"],
+      ["Note", "Peso amounts are plain numbers so they can be summed. Time is shown in words; the (decimal) columns are the ones to add up."],
     ]),
     head,
     ...body,
@@ -230,8 +255,10 @@ export async function exportAttendanceCsv(date: string): Promise<ExportFile | nu
   const body = att.rows.map((r: AttendanceRow) => [
     r.name, r.role,
     r.status === "noschedule" ? "No schedule set" : (DAY_STATUS[r.status] ?? r.status),
-    hhmm(r.sched_start), hhmm(r.sched_end), hhmm(r.first_in), hhmm(r.last_out),
-    hours(r.worked_min), r.late_min, r.leave_name ?? "",
+    time12(r.sched_start), time12(r.sched_end), time12(r.first_in), time12(r.last_out),
+    dur(r.worked_min), hoursDec(r.worked_min),
+    r.late_min > 0 ? dur(r.late_min) : "—",
+    r.leave_name ?? "",
   ]);
 
   const csv = rows2csv([
@@ -241,7 +268,7 @@ export async function exportAttendanceCsv(date: string): Promise<ExportFile | nu
       ["Staff on roster", String(att.rows.length)],
     ]),
     ["Employee", "Role", "Status", "Sched in", "Sched out", "Time in", "Time out",
-     "Hours worked", "Late (min)", "Leave"],
+     "Hours worked", "Hours (decimal)", "Late", "Leave"],
     ...body,
   ]);
 
@@ -260,14 +287,15 @@ export async function exportAttendanceRangeCsv(
 
   const summaryHead = [
     "Employee", "Role", "Days present", "Days absent", "Days on leave",
-    "Hours worked", "Regular-day hrs", "Rest day hrs", "OT hrs",
-    "Undertime hrs", "Total late (min)", "Schedule set?",
+    "Hours worked", "Hours (decimal)", "Regular-day hours", "Rest day hours",
+    "Overtime", "Undertime", "Total late", "Schedule set?",
   ];
   const summary = att.people.map((p: RangePerson) => [
     p.name, p.role, p.days_present, p.days_absent, p.days_leave,
-    hours(p.worked_min), hours(Math.max(0, p.worked_min - p.restday_min)),
-    hours(p.restday_min), hours(p.ot_min), hours(p.undertime_min),
-    p.late_min, p.has_schedule ? "Yes" : "NO",
+    dur(p.worked_min), hoursDec(p.worked_min),
+    dur(Math.max(0, p.worked_min - p.restday_min)), dur(p.restday_min),
+    dur(p.ot_min), dur(p.undertime_min), dur(p.late_min),
+    p.has_schedule ? "Yes" : "NO",
   ]);
 
   const totals = att.people.reduce(
@@ -284,17 +312,19 @@ export async function exportAttendanceRangeCsv(
   sumTotal[0] = "TOTAL";
   sumTotal[2] = totals.present;
   sumTotal[3] = totals.absent;
-  sumTotal[5] = hours(totals.worked);
-  sumTotal[8] = hours(totals.ot);
-  sumTotal[10] = totals.late;
+  sumTotal[5] = dur(totals.worked);
+  sumTotal[6] = hoursDec(totals.worked);
+  sumTotal[9] = dur(totals.ot);
+  sumTotal[11] = dur(totals.late);
 
   const detail = att.rows.map((r: RangeDay) => [
     r.date,
     new Date(r.date + "T00:00:00").toLocaleDateString("en-PH", { weekday: "short" }),
     r.name, r.role, DAY_STATUS[r.status] ?? r.status,
-    hhmm(r.sched_start), hhmm(r.sched_end), hhmm(r.first_in), hhmm(r.last_out),
-    hours(r.worked_min), r.late_min, hours(r.undertime_min),
-    hours(r.ot_min), hours(r.restday_min), hours(r.nightdiff_min),
+    time12(r.sched_start), time12(r.sched_end), time12(r.first_in), time12(r.last_out),
+    dur(r.worked_min), hoursDec(r.worked_min),
+    dur(r.late_min), dur(r.undertime_min),
+    dur(r.ot_min), dur(r.restday_min), dur(r.nightdiff_min),
     r.leave_name ?? "", r.holiday_name ?? "",
   ]);
 
@@ -304,7 +334,7 @@ export async function exportAttendanceRangeCsv(
       ["Period", `${att.start} to ${att.end}`],
       ["Timezone", att.timezone],
       ["Staff", String(att.people.length)],
-      ["Note", "Hours are decimal (7.50 = 7h30m). Days off with no work are omitted below."],
+      ["Note", "Times are 12-hour. Durations are in words; the (decimal) columns are the ones to add up. Days off with no work are omitted below."],
     ]),
     ["SUMMARY BY EMPLOYEE"],
     summaryHead,
@@ -314,8 +344,8 @@ export async function exportAttendanceRangeCsv(
     [],
     ["DAY BY DAY"],
     ["Date", "Day", "Employee", "Role", "Status", "Sched in", "Sched out",
-     "Time in", "Time out", "Hours", "Late (min)", "Undertime hrs",
-     "OT hrs", "Rest day hrs", "Night diff hrs", "Leave", "Holiday"],
+     "Time in", "Time out", "Hours worked", "Hours (decimal)", "Late",
+     "Undertime", "Overtime", "Rest day", "Night differential", "Leave", "Holiday"],
     ...detail,
   ]);
 
@@ -362,7 +392,8 @@ export async function exportPreflightCsv(
   const body = pf.people.map((p) => [
     p.name, p.role, COMP_LABELS[p.compensation_type as keyof typeof COMP_LABELS] ?? p.compensation_type,
     money0(p.rate), p.has_rate ? "" : "NO RATE SET",
-    p.days_present, p.absent_days, p.hours, p.restday_hours, p.ot_hours,
+    p.days_present, p.absent_days,
+    durH(p.hours), p.hours, durH(p.restday_hours), durH(p.ot_hours),
     p.has_schedule ? "Yes" : "NO SCHEDULE",
   ]);
 
@@ -374,8 +405,8 @@ export async function exportPreflightCsv(
       ["Missing schedule", String(pf.missing_schedule)],
     ]),
     ["Employee", "Role", "Pay basis", "Rate", "Rate warning",
-     "Days present", "Days absent", "Regular hrs", "Rest day hrs", "OT hrs",
-     "Schedule"],
+     "Days present", "Days absent", "Regular hours", "Hours (decimal)",
+     "Rest day", "Overtime", "Schedule"],
     ...body,
   ]);
 

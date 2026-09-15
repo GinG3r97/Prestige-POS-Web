@@ -117,26 +117,32 @@ function ErrorNote({ msg }: { msg: string | null }) {
   );
 }
 
-/** Shared From/To picker — capped at today, never inverted. */
+/**
+ * From/To picker — capped at today, never inverted.
+ *
+ * Stacked on phones on purpose: a native date input renders at its own
+ * intrinsic width and refuses to shrink, so two of them side by side on a
+ * ~390px screen overlap each other and their labels. Side by side only from
+ * `sm` up, where there's room.
+ */
 function RangePicker({ start, end, onChange, disabled }: {
   start: string; end: string;
   onChange: (s: string, e: string) => void; disabled?: boolean;
 }) {
   const today = ymd(new Date());
+  const field =
+    "w-full rounded-xl border border-hairline bg-surface-1 px-3 py-2.5 text-[14px] font-semibold text-ink outline-none focus:border-brand-soft disabled:opacity-50";
   return (
-    <div className="flex flex-1 flex-wrap items-center gap-2 rounded-2xl border border-hairline bg-surface-1 px-3 py-2">
-      <label className="flex min-w-0 flex-1 items-center gap-1.5">
-        <span className="shrink-0 text-[11px] font-semibold uppercase tracking-wide text-ink-subtle">From</span>
+    <div className="grid w-full gap-2 sm:grid-cols-2">
+      <label className="block">
+        <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-ink-subtle">From</span>
         <input type="date" value={start} max={end || today} disabled={disabled}
-          onChange={(e) => onChange(e.target.value, end)}
-          className="w-full min-w-0 bg-transparent text-[13px] font-semibold text-ink outline-none" />
+          onChange={(e) => onChange(e.target.value, end)} className={field} />
       </label>
-      <span className="text-ink-subtle">–</span>
-      <label className="flex min-w-0 flex-1 items-center gap-1.5">
-        <span className="shrink-0 text-[11px] font-semibold uppercase tracking-wide text-ink-subtle">To</span>
+      <label className="block">
+        <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-ink-subtle">To</span>
         <input type="date" value={end} min={start} max={today} disabled={disabled}
-          onChange={(e) => onChange(start, e.target.value)}
-          className="w-full min-w-0 bg-transparent text-[13px] font-semibold text-ink outline-none" />
+          onChange={(e) => onChange(start, e.target.value)} className={field} />
       </label>
     </div>
   );
@@ -389,10 +395,14 @@ function Attendance({ initial, compact }: { initial: HrAttendance | null; compac
 
       {!compact && mode === "range" && (
         <>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="space-y-2">
             <RangePicker start={start} end={end} onChange={loadRange} disabled={pending} />
-            <ExportButton label="Export range" primary busy={csv.busy === "range"}
-              onClick={() => csv.run("range", () => exportAttendanceRangeCsv(start, end))} />
+            <button type="button" disabled={csv.busy === "range" || pending}
+              onClick={() => csv.run("range", () => exportAttendanceRangeCsv(start, end))}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-ink py-2.5 text-[13px] font-bold text-white transition active:scale-[0.99] disabled:opacity-50">
+              {csv.busy === "range" ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+              Export range
+            </button>
           </div>
 
           <ErrorNote msg={err} />
@@ -531,11 +541,11 @@ function GeneratePanel({ onDone }: { onDone: () => void }) {
 
       {pf && !checking && (
         <div className="space-y-2 rounded-xl bg-surface-2 p-3">
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-[12px] font-semibold text-ink">
               {pf.headcount} staff · {pf.people.reduce((a, p) => a + p.days_present, 0)} days worked
             </p>
-            <ExportButton label="Pre-check CSV" busy={csv.busy === "pf"}
+            <ExportButton label="Pre-check" busy={csv.busy === "pf"}
               onClick={() => csv.run("pf", () => exportPreflightCsv(start, end))} />
           </div>
 
@@ -797,18 +807,22 @@ export function HrView({ summary, requests, attendance, payroll }: {
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-4 pb-24 sm:py-5">
-      <div className="mb-4 flex gap-1.5 overflow-x-auto rounded-2xl border border-hairline bg-surface-1 p-1.5 shadow-card">
+      {/* Four equal columns rather than a scrolling row: "Payroll" was falling
+          off the right edge on a phone, so the tab existed but couldn't be
+          seen. Icon sits above the label until there's width for a row. */}
+      <div className="mb-4 grid grid-cols-4 gap-1 rounded-2xl border border-hairline bg-surface-1 p-1.5 shadow-card">
         {TABS.map((t) => {
           const on = t.key === tab;
           const Icon = t.icon;
           return (
             <button key={t.key} onClick={() => setTab(t.key)}
-              className={`flex flex-1 shrink-0 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-[12px] font-bold transition sm:text-[13px] ${
+              className={`relative flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[11px] font-bold transition sm:flex-row sm:gap-1.5 sm:px-3 sm:text-[13px] ${
                 on ? "bg-ink text-white" : "text-ink-muted hover:bg-surface-2"
               }`}>
-              <Icon size={15} />{t.label}
+              <Icon size={16} className="shrink-0" />
+              <span className="truncate">{t.label}</span>
               {t.badge ? (
-                <span className={`grid h-4 min-w-4 place-items-center rounded-full px-1 text-[10px] font-extrabold ${
+                <span className={`absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[10px] font-extrabold sm:static sm:right-auto sm:top-auto ${
                   on ? "bg-white text-ink" : "bg-brand text-white"
                 }`}>{t.badge}</span>
               ) : null}
