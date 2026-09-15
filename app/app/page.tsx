@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Store, Clock, ChevronRight } from "lucide-react";
+import { Store, Clock, ChevronRight, Users } from "lucide-react";
 import { getMyTenantId, getTenantDetail } from "@/lib/data/dashboard";
 import { StoreDashboard } from "@/components/dashboard/store-dashboard";
 import { SalesReport } from "@/components/dashboard/sales-report";
@@ -40,6 +40,19 @@ export default async function ClientPortalPage() {
       <PortalHeader title={d.tenant.business_name} plan={d.subscription?.plan ?? "trial"} />
       <main className="mx-auto max-w-4xl space-y-4 px-4 py-5">
         <Link
+          href="/app/hr"
+          className="flex items-center gap-3 rounded-2xl border border-hairline bg-surface-1 p-4 shadow-card transition hover:border-brand-soft"
+        >
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-tint text-brand-deep">
+            <Users size={18} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-ink">HR</p>
+            <p className="text-[12px] text-ink-muted">Approvals · attendance · payroll · export</p>
+          </div>
+          <ChevronRight size={16} className="text-ink-subtle" />
+        </Link>
+        <Link
           href="/app/attendance"
           className="flex items-center gap-3 rounded-2xl border border-hairline bg-surface-1 p-4 shadow-card transition hover:border-brand-soft"
         >
@@ -47,7 +60,7 @@ export default async function ClientPortalPage() {
             <Clock size={18} />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-ink">Staff attendance</p>
+            <p className="text-sm font-semibold text-ink">Staff attendance setup</p>
             <p className="text-[12px] text-ink-muted">QR time clock · store location · selfies</p>
           </div>
           <ChevronRight size={16} className="text-ink-subtle" />
