@@ -74,6 +74,77 @@ export type HrPayroll = {
   runs: PayrollRun[];
 };
 
+/** One employee-day inside a range query. */
+export type RangeDay = {
+  employee_id: string;
+  name: string;
+  role: string;
+  date: string;
+  status: string;
+  sched_start: number | null;
+  sched_end: number | null;
+  first_in: number | null;
+  last_out: number | null;
+  worked_min: number;
+  late_min: number;
+  undertime_min: number;
+  ot_min: number;
+  restday_min: number;
+  nightdiff_min: number;
+  leave_name: string | null;
+  holiday_name: string | null;
+};
+
+export type RangePerson = {
+  employee_id: string;
+  name: string;
+  role: string;
+  has_schedule: boolean;
+  days_present: number;
+  days_absent: number;
+  days_leave: number;
+  worked_min: number;
+  late_min: number;
+  ot_min: number;
+  undertime_min: number;
+  restday_min: number;
+};
+
+export type HrAttendanceRange = {
+  start: string;
+  end: string;
+  timezone: string;
+  business_name: string;
+  people: RangePerson[];
+  rows: RangeDay[];
+};
+
+/** Dry run of a payroll period — what would be generated, and what's missing. */
+export type PreflightPerson = {
+  employee_id: string;
+  name: string;
+  role: string;
+  compensation_type: string;
+  rate: number;
+  has_rate: boolean;
+  has_schedule: boolean;
+  hours: number;
+  restday_hours: number;
+  ot_hours: number;
+  days_present: number;
+  absent_days: number;
+};
+
+export type HrPreflight = {
+  start: string;
+  end: string;
+  headcount: number;
+  missing_rate: number;
+  missing_schedule: number;
+  duplicate: boolean;
+  people: PreflightPerson[];
+};
+
 export async function getHrSummary(): Promise<HrSummary> {
   const supa = createClient();
   const { data, error } = await supa.rpc("hr_summary");
@@ -104,4 +175,30 @@ export async function getHrPayroll(): Promise<HrPayroll> {
   const { data, error } = await supa.rpc("hr_payroll", { p_run: null });
   if (error) return { regular_hours_per_day: 8, runs: [] };
   return data as HrPayroll;
+}
+
+export async function getHrAttendanceRange(
+  start: string,
+  end: string,
+): Promise<HrAttendanceRange | null> {
+  const supa = createClient();
+  const { data, error } = await supa.rpc("hr_attendance_range", {
+    p_start: start,
+    p_end: end,
+  });
+  if (error) return null;
+  return data as HrAttendanceRange;
+}
+
+export async function getHrPreflight(
+  start: string,
+  end: string,
+): Promise<HrPreflight | null> {
+  const supa = createClient();
+  const { data, error } = await supa.rpc("hr_payroll_preflight", {
+    p_start: start,
+    p_end: end,
+  });
+  if (error) return null;
+  return data as HrPreflight;
 }
