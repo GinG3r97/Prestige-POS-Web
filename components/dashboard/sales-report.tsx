@@ -10,31 +10,20 @@ import {
   Award,
   X,
   ChevronDown,
+  Download,
+  FileText,
+  Sheet,
+  Loader2,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { peso, pesoCompact, num, PAYMENT_LABELS } from "@/lib/format";
+import {
+  downloadSalesCsv,
+  downloadSalesPdf,
+  type SalesReportData,
+  type SalesTxns,
+} from "@/lib/sales-export";
 import { Bars } from "./bits";
-
-/** Shape returned by the public.tenant_sales_report RPC. */
-type SalesReportData = {
-  range: { from: string; to: string; method: string | null };
-  kpis: {
-    revenue_cents: number;
-    orders: number;
-    avg_ticket_cents: number;
-    last_order_at: string | null;
-  };
-  split: {
-    general_cents: number;
-    separated_cents: number;
-    general_qty: number;
-    separated_qty: number;
-  };
-  payment_mix: { method: string; amount: number; count: number }[];
-  by_category: { category: string; cents: number; qty: number; separated: boolean }[];
-  top_sellers: { name: string; qty: number; revenue: number }[];
-  daily: { d: string; rev: number; orders: number }[];
-};
 
 const RANGES = [
   { key: "today", label: "Today" },
@@ -112,7 +101,7 @@ const PAY_TONE: Record<string, string> = {
 };
 const toneFor = (m: string) => PAY_TONE[m] ?? "#8A8A8A";
 
-export function SalesReport({ tenantId }: { tenantId: string }) {
+export function SalesReport({ tenantId, storeName }: { tenantId: string; storeName: string }) {
   const supa = useMemo(() => createClient(), []);
   const todayStr = useMemo(() => toInputDate(new Date()), []);
   const [rangeKey, setRangeKey] = useState<RangeKey>("today");
@@ -125,6 +114,9 @@ export function SalesReport({ tenantId }: { tenantId: string }) {
   const [err, setErr] = useState(false);
   const [showAllCats, setShowAllCats] = useState(false);
   const [showAllSellers, setShowAllSellers] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exporting, setExporting] = useState<"pdf" | "csv" | null>(null);
+  const [exportErr, setExportErr] = useState(false);
 
   // Active window. Custom reads the two date inputs (swapped if reversed).
   const bounds = useMemo(() => {
@@ -164,6 +156,38 @@ export function SalesReport({ tenantId }: { tenantId: string }) {
     load();
   }, [load]);
 
+  // Exports exactly what's on screen (period + payment filter), plus every
+  // receipt behind it. If the receipt detail fails, still export the summary.
+  async function exportAs(kind: "pdf" | "csv") {
+    if (!data) return;
+    setExportOpen(false);
+    setExporting(kind);
+    setExportErr(false);
+    try {
+      const { data: t, error } = await supa.rpc("tenant_sales_transactions", {
+        p_tenant: tenantId,
+        p_from: fromIso,
+        p_to: toIso,
+        p_method: method,
+      });
+      const input = {
+        storeName,
+        from: bounds.from,
+        to: bounds.to,
+        allTime: rangeKey === "all",
+        method,
+        report: data,
+        txns: error ? null : (t as SalesTxns),
+      };
+      if (kind === "pdf") await downloadSalesPdf(input);
+      else downloadSalesCsv(input);
+    } catch {
+      setExportErr(true);
+    } finally {
+      setExporting(null);
+    }
+  }
+
   // Only surface the Regular/Separated split when this store actually
   // separates anything — otherwise it's noise.
   const hasSeparated =
@@ -180,19 +204,59 @@ export function SalesReport({ tenantId }: { tenantId: string }) {
 
   return (
     <section className="rounded-2xl border border-hairline bg-surface-1 p-4 shadow-card sm:p-5">
-      {/* Heading + refresh */}
+      {/* Heading + export + refresh */}
       <div className="mb-3 flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-brand-deep">
           <TrendingUp size={16} /> Sales
         </h2>
-        <button
-          onClick={load}
-          className="grid h-8 w-8 place-items-center rounded-full border border-hairline bg-surface-1 text-ink-muted transition hover:text-ink"
-          aria-label="Refresh"
-        >
-          <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
-        </button>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <button
+              onClick={() => setExportOpen((v) => !v)}
+              disabled={!data || exporting !== null}
+              className="inline-flex h-8 items-center gap-1.5 rounded-full border border-hairline bg-surface-1 px-3 text-[12px] font-semibold text-ink-muted transition hover:text-ink disabled:opacity-50"
+            >
+              {exporting ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
+              {exporting ? "Preparing…" : "Export"}
+            </button>
+            {exportOpen && (
+              <>
+                <button
+                  className="fixed inset-0 z-10 cursor-default"
+                  aria-label="Close export menu"
+                  onClick={() => setExportOpen(false)}
+                />
+                <div className="absolute right-0 z-20 mt-1.5 w-56 overflow-hidden rounded-xl border border-hairline bg-surface-1 p-1 shadow-card">
+                  <ExportOption
+                    icon={FileText}
+                    label="PDF report"
+                    sub="Formatted for printing and sharing"
+                    onClick={() => exportAs("pdf")}
+                  />
+                  <ExportOption
+                    icon={Sheet}
+                    label="CSV spreadsheet"
+                    sub="Every receipt and item, for Excel"
+                    onClick={() => exportAs("csv")}
+                  />
+                </div>
+              </>
+            )}
+          </div>
+          <button
+            onClick={load}
+            className="grid h-8 w-8 place-items-center rounded-full border border-hairline bg-surface-1 text-ink-muted transition hover:text-ink"
+            aria-label="Refresh"
+          >
+            <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+          </button>
+        </div>
       </div>
+      {exportErr && (
+        <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-[12px] text-red-700">
+          Couldn&apos;t create the export. Please try again.
+        </p>
+      )}
 
       {/* Pick a period */}
       <div className="-mx-1 mb-3 flex gap-1.5 overflow-x-auto px-1 pb-1">
@@ -486,6 +550,31 @@ function MoreToggle({
     >
       {open ? "Show less" : `Show all ${count}`}
       <ChevronDown size={14} className={`transition ${open ? "rotate-180" : ""}`} />
+    </button>
+  );
+}
+
+function ExportOption({
+  icon: Icon,
+  label,
+  sub,
+  onClick,
+}: {
+  icon: typeof Tag;
+  label: string;
+  sub: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex w-full items-start gap-2.5 rounded-lg px-2.5 py-2 text-left transition hover:bg-surface-2"
+    >
+      <Icon size={15} className="mt-0.5 shrink-0 text-brand-deep" />
+      <span>
+        <span className="block text-[13px] font-semibold text-ink">{label}</span>
+        <span className="block text-[11px] text-ink-muted">{sub}</span>
+      </span>
     </button>
   );
 }

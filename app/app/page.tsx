@@ -65,7 +65,7 @@ export default async function ClientPortalPage() {
           </div>
           <ChevronRight size={16} className="text-ink-subtle" />
         </Link>
-        <SalesReport tenantId={tenantId} />
+        <SalesReport tenantId={tenantId} storeName={d.tenant.business_name} />
         <StoreDashboard d={d} />
       </main>
     </>
